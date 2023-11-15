@@ -1,0 +1,19 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es2021": true
+    },
+    "extends": "standard",
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "rules": {
+        "no-console": "off",
+        "linebreak-style": "off",
+        "no-underscore-dangle": ["error", { "allowAfterThis": true }],
+        "prefer-destructuring": "off",
+        "space-before-function-paren" : "off",
+        "no-trailing-spaces" : "off"
+    }
+}
