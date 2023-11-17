@@ -8,8 +8,13 @@ class SellerHandler {
   }
 
   async getSellerFlowersHandler (sellerId) {
-    const message = sellerId
-    return message
+    const flowersData = await this._flowerService.getSellerFlowers(sellerId)
+    return flowersData
+  }
+  
+  async getSellerFlowerByIdHandler (flowerId, sellerId) {
+    const flowersData = await this._flowerService.getSellerFlowerById(flowerId, sellerId)
+    return flowersData
   }
 
   async addSellerFlowerHandler (payload, sellerId) {
@@ -18,25 +23,35 @@ class SellerHandler {
     const priceNum = Number(price)
     const stockNum = Number(stock)
     const id = `flower-${nanoid(16)}_${sellerId}`
-    payload.id = id
-    payload.sellerId = sellerId
-    payload.cover = cover
-    payload.price = priceNum
-    payload.stock = stockNum
+    payload = {
+      ...payload,
+      id,
+      sellerId,
+      price: priceNum,
+      cover,
+      stock: stockNum
+    }
     await this._flowerService.addFlower(payload)
     return payload.id
   }
 
   async updateSellerFlowerHandler (payload, sellerId, flowerid) {
-    const { cover, price, stock } = payload
+    const cover = payload.cover !== undefined ? payload.cover : undefined
     await this._validator.validatePutFlowerPayload(payload)
-    const priceNum = Number(price)
-    const stockNum = Number(stock)
-    payload.sellerId = sellerId
-    payload.cover = cover
-    payload.price = priceNum
-    payload.stock = stockNum
-    await this._flowerService.updateFlower(payload, flowerid)
+    const flowerData = await this._flowerService.getSellerFlowerById(flowerid, sellerId)
+    console.log(flowerData)
+    const flowerName = flowerData.flowerName
+
+    if (payload.price !== undefined) payload.price = Number(payload.price)
+    if (payload.stock !== undefined) payload.stock = Number(payload.stock)
+
+    if (cover !== undefined) payload.cover = cover
+    await this._flowerService.updateFlower(payload, flowerid, sellerId, flowerName)
+  }
+
+  async deleteSellerFlowerHandler(sellerId, flowerId) {
+    const result = await this._flowerService.deleteSellerFlowerById(flowerId, sellerId)
+    return result
   }
 }
 module.exports = SellerHandler

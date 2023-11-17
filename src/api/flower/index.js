@@ -11,8 +11,11 @@ router.get('/', async (req, res) => {
     res.status(200)
     res.send(await handler.getFlowersHandler())
   } catch (error) {
-    res.status(error)
-    res.send(error)
+    res.status(500)
+    res.send({
+      status: 'Fail',
+      message: error
+    })
   }
 })
 router.get('/:id', async (req, res) => {
@@ -21,8 +24,11 @@ router.get('/:id', async (req, res) => {
     res.status(200)
     res.send(await handler.getFlowerByIdHandler(id))
   } catch (error) {
-    res.status(error)
-    res.send(error)
+    res.status(500)
+    res.send({
+      status: 'Fail',
+      message: error
+    })
   }
 })
 module.exports = router
