@@ -31,7 +31,8 @@ exports.login = async (req, res) => {
   }
   try {
     const userRecord = await admin.auth().getUserByEmail(user.email)
-    res.status(200).json({ message: 'Masuk Berhasil', userRecord })
+    const token = await admin.auth().createCustomToken(userRecord.uid)
+    res.status(200).json({ message: 'Masuk Berhasil', userRecord, token })
   } catch (error) {
     res.status(500).json({ error: 'Gagal Saat Masuk' })
   }

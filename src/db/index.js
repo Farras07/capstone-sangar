@@ -5,7 +5,7 @@ dotenv.config({ path: '.env.development' })
 
 const db = new Firestore({
   projectId: process.env.PROJECT_ID,
-  keyFilename: 'C:\\Back-end\\capstone-sangar\\credentials.json'
+  keyFilename: 'C:\\Users\\Admin\\OneDrive\\Documents\\GitHub\\capstone-sangar\\credentials.json'
 })
 
 module.exports = db

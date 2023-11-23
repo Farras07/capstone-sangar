@@ -10,6 +10,7 @@ const authenticate = require('./middleware/authenticate.js')
 
 const flowers = require('./api/flower')
 const seller = require('./api/seller')
+const cart = require('./api/cart')
 
 dotenv.config({ path: '.env.development' })
 const host = process.env.HOST
@@ -33,6 +34,7 @@ app.use('/auth', authRoutes)
 
 app.use('/flower', flowers)
 app.use('/seller', seller)
+app.use('/cart', cart)
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
