@@ -14,7 +14,6 @@ class FlowerServices {
   
       const flowersData = []
       querySnapshot.forEach((doc) => {
-        // Access the data of each flower document
         const flowerData = doc.data()
         flowersData.push(flowerData)
       })
@@ -27,8 +26,24 @@ class FlowerServices {
     }
   }
 
-  async getFlowersById (idFlower) {
-    const id = idFlower
+  async getFlowerById(idFlower) {
+    try {
+      const querySnapshot = await db.collectionGroup('flowers').where('id', '==', idFlower).get()
+  
+      let flowerData = null
+      querySnapshot.forEach((doc) => {
+        flowerData = doc.data()
+      })
+      if (!flowerData) {
+        throw new NotFoundError('Flower not found')
+      }
+      console.log(flowerData)
+  
+      return flowerData
+    } catch (error) {
+      console.error('Error getting flowers:', error)
+      throw error
+    }
   }
 
   async getSellerFlowers (sellerId) {
@@ -109,9 +124,7 @@ class FlowerServices {
       console.log('ddd')
       console.log(data)
       const doc = db.collection('products').doc(sellerId).collection('flowers').doc(flowerName)
-      await doc.update(data).then(() => console.log('update data success')).catch((error) => {
-        throw error
-      })
+      await doc.update(data)
     } catch (error) {
       return error
     }

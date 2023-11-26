@@ -8,26 +8,38 @@ const handler = new FlowerHandler(flowerServices, validator)
 
 router.get('/', async (req, res) => {
   try {
+    const data = await handler.getFlowersHandler()
     res.status(200)
-    res.send(await handler.getFlowersHandler())
+    res.send(
+      {
+        status: 'success',
+        message: 'Success get flowers',
+        data
+      }
+    )
   } catch (error) {
-    res.status(500)
-    res.send({
+    res.status(error.statusCode || 500).send({
       status: 'Fail',
-      message: error
+      message: error.message
     })
   }
 })
 router.get('/:id', async (req, res) => {
   try {
-    const { id } = req.params.id
+    const { id } = req.params
+    const data = await handler.getFlowerByIdHandler(id)
     res.status(200)
-    res.send(await handler.getFlowerByIdHandler(id))
+    res.send(
+      {
+        status: 'success',
+        message: 'Success get flowers',
+        data
+      }
+    )
   } catch (error) {
-    res.status(500)
-    res.send({
+    res.status(error.statusCode || 500).send({
       status: 'Fail',
-      message: error
+      message: error.message
     })
   }
 })

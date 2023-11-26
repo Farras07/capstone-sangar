@@ -4,14 +4,14 @@ class FlowerHandler {
     this._validator = validator
   }
 
-  async getFlowersHandler (payload) {
-    const message = '<h1>Halo</h1>'
-    return message
+  async getFlowersHandler () {
+    const data = await this._service.getFlowers()
+    return data
   }
 
   async getFlowerByIdHandler (idFlower) {
-    const message = idFlower
-    return message
+    const data = await this._service.getFlowerById(idFlower)
+    return data
   }
 }
 module.exports = FlowerHandler
