@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 const admin = require('firebase-admin')
 const serviceAccount = require('../../firebase-admin-key.json')
-const { getAuth, signInWithEmailAndPassword, signOut } = require('firebase/auth')
+const { getAuth, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } = require('firebase/auth')
 const app = require('../config/firebaseConfig')
 const db = require('../db')
 const validator = require('../validator/auth')
@@ -93,6 +93,17 @@ exports.logout = async (req, res) => {
     res.status(500).json({ error: error.message })
   }
 }
+
+exports.resetPassword = async (req, res) => {
+  const email = req.body.email
+  try {
+    const response = await sendPasswordResetEmail(auth, email)
+    res.status(200).json({ message: 'Link has been sent to your email', response })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+}
+
 // exports.logout = async (req, res) => {
 //   const token = req.headers.authorization
 
