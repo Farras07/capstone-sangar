@@ -1,5 +1,5 @@
-const db = require('../db')
-const gc = require('../storage')
+const db = require('../config/dbConfig')
+const gc = require('../config/storageConfig')
 const bucket = gc.bucket('flowers-capstone') // should be your bucket name
 const NotFoundError = require('../exceptions/NotFoundError')
 const ClientError = require('../exceptions/ClientError')

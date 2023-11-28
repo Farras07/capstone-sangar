@@ -1,42 +1,55 @@
 /* eslint-disable no-underscore-dangle */
-const admin = require('firebase-admin')
-const serviceAccount = require('../../firebase-admin-key.json')
+const admin = require('../config/firebaseAdmin')
 const { getAuth, signInWithEmailAndPassword, signOut } = require('firebase/auth')
 const app = require('../config/firebaseConfig')
-const db = require('../db')
-const validator = require('../validator/auth')
+const UserServices = require('../services/userServices')
 
+const userServices = new UserServices()
 const auth = getAuth(app)
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-})
+// exports.signup = async (req, res) => {
+//   try {
+//     const image = req.file
+//     req.body.cover = req.file
+//     await validator.validatePostUserPayload(req.body)
+//     const userRecord = await admin.auth().createUser({
+//       displayName: req.body.username,
+//       email: req.body.email,
+//       password: req.body.password,
+//       // phoneNumber: req.body.contact,
+//       emailVerified: true,
+//       disabled: false
+//     })
+//     const filename = `${userRecord.uid}_${image.originalname}`
+//     const buffer = image.buffer
+//     const file = await userServices.uploadUserImage(filename, buffer)
+//     const imageUrl = `${process.env.GS_URL_USER}/${file}`
 
-exports.signup = async (req, res) => {
-  try {
-    await validator.validatePostUserPayload(req.body)
-    const user = {
-      name: req.body.name,
-      username: req.body.username,
-      email: req.body.email,
-      passord: req.body.password,
-      address: req.body.address,
-      contact: req.body.contact
-    }
-    const userRecord = await admin.auth().createUser({
-      email: user.email,
-      password: user.passord,
-      emailVerified: true,
-      disabled: false
-    })
-    res.status(200).json({ message: 'User Created', userRecord })
-  } catch (error) {
-    res.status(500).send({
-      status: 'Fail',
-      message: error.message
-    })  
-  }
-}
+//     await admin.auth().updateUser(userRecord.uid, {
+//       photoURL: imageUrl 
+//     })
+
+//     const user = {
+//       id: userRecord.uid,
+//       fullname: req.body.fullname,
+//       username: req.body.username,
+//       email: req.body.email,
+//       address: req.body.address,
+//       location_coordinate: req.body.location_coordinate,
+//       contact: req.body.contact,
+//       cart: [],
+//       image: imageUrl,
+//       isSeller: false
+//     }
+//     await userServices.addUser(user)
+//     res.status(200).json({ message: 'User Created', id: user.id })
+//   } catch (error) {
+//     res.status(500).send({
+//       status: 'Fail',
+//       message: error.message
+//     })  
+//   }
+// }
 // exports.signup = async (req, res) => {
 //   try {
 //     // await validator.validatePostUserPayload(req.body)
@@ -63,8 +76,23 @@ exports.login = async (req, res) => {
   }
   try {
     const signInResponse = await signInWithEmailAndPassword(auth, user.email, user.password)
+    const userProfle = await userServices.getUserById(signInResponse.user.uid)
+    console.log('profile')
+    console.log(userProfle)
     const credential = await signInResponse.user.getIdToken()
-    res.status(200).json({ message: 'Masuk Berhasil', accessToken: credential })
+    const dataUser = {
+      credential,
+      profile: {
+        username: signInResponse.user.displayName,
+        email: signInResponse.user.email,
+        image: signInResponse.user.photoURL,
+        address: userProfle.address,
+        location_coordinate: userProfle.location_coordinate,
+        cart: userProfle.cart
+        // phoneNumber: signInResponse.user.providerData[0].phoneNumber
+      }
+    }
+    res.status(200).json({ message: 'Masuk Berhasil', user: dataUser })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }

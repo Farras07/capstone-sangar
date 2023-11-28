@@ -10,6 +10,7 @@ const authRoutes = require('./routes/authRoutes.js')
 const authenticate = require('./middleware/authenticate.js')
 
 const flowers = require('./api/flower')
+const users = require('./api/user')
 const seller = require('./api/seller')
 const transaction = require('./api/transaction')
 
@@ -35,6 +36,7 @@ app.use('/auth', authRoutes)
 
 app.use('/flower', flowers)
 app.use('/seller', seller)
+app.use('/user', users)
 app.use('/transaction', transaction)
 app.get('/', (req, res) => {
   res.send('Hello World!')

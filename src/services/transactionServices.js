@@ -1,4 +1,4 @@
-const db = require('../db')
+const db = require('../config/dbConfig')
 const NotFoundError = require('../exceptions/NotFoundError')
 class TransactionServices {
   constructor () {
