@@ -13,6 +13,7 @@ const flowers = require('./api/flower')
 const users = require('./api/user')
 const seller = require('./api/seller')
 const transaction = require('./api/transaction')
+const cart = require('./api/cart')
 
 dotenv.config({ path: '.env.development' })
 const host = process.env.HOST
@@ -38,6 +39,7 @@ app.use('/flower', flowers)
 app.use('/seller', seller)
 app.use('/user', users)
 app.use('/transaction', transaction)
+app.use('/cart', cart)
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })

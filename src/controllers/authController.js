@@ -80,19 +80,7 @@ exports.login = async (req, res) => {
     console.log('profile')
     console.log(userProfle)
     const credential = await signInResponse.user.getIdToken()
-    const dataUser = {
-      credential,
-      profile: {
-        username: signInResponse.user.displayName,
-        email: signInResponse.user.email,
-        image: signInResponse.user.photoURL,
-        address: userProfle.address,
-        location_coordinate: userProfle.location_coordinate,
-        cart: userProfle.cart
-        // phoneNumber: signInResponse.user.providerData[0].phoneNumber
-      }
-    }
-    res.status(200).json({ message: 'Masuk Berhasil', user: dataUser })
+    res.status(200).json({ message: 'Masuk Berhasil', credential })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
