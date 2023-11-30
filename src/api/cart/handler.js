@@ -4,10 +4,18 @@ class CartHandler {
     this._validator = validator
   }
 
-  async getCartsHandler() {
+  // async getCartsHandler() {
+  //   try {
+  //     // Implementation to retrieve and return carts
+  //     return await this._service.getCarts()
+  //   } catch (error) {
+  //     throw new Error(`Failed to get carts: ${error.message}`)
+  //   }
+  // }
+
+  async getCartHandler(userId) {
     try {
-      // Implementation to retrieve and return carts
-      return await this._service.getCarts()
+      return await this._service.getCart(userId)
     } catch (error) {
       throw new Error(`Failed to get carts: ${error.message}`)
     }
@@ -34,13 +42,13 @@ class CartHandler {
     }
   }
 
-  async updateCartHandler(cartId, payload) {
+  async updateCartHandler(userId, payload) {
     try {
       // Validate the payload using the validator
       this._validator.validatePutCartPayload(payload)
 
       // Implementation to update an existing cart
-      return await this._service.updateCartQuantity(cartId, payload)
+      return await this._service.updateCartQuantity(userId, payload)
     } catch (error) {
       throw new Error(`Failed to update cart: ${error.message}`)
     }

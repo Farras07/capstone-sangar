@@ -3,7 +3,7 @@ const router = express.Router()
 const multer = require('multer')
 const validator = require('../../validator/seller')
 const SellerHandler = require('./handler')
-const upload = multer()// Create a multer instance
+const upload = multer()
 const AuthenticationServices = require('../../services/authenticationServices')
 const SellerServices = require('../../services/sellerServices')
 const sellerServices = new SellerServices()
@@ -99,7 +99,7 @@ router.get('/:sellerId/flowers/:id', async (req, res) => {
   try {
     const { id, sellerId } = req.params
     const data = await handler.getSellerFlowerByIdHandler(id, sellerId)
-    res.status(200)
+    res.status(200) 
     res.send(
       {
         status: 'success',

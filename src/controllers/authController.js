@@ -79,7 +79,7 @@ exports.login = async (req, res) => {
     const userProfle = await userServices.getUserById(signInResponse.user.uid)
     console.log('profile')
     console.log(userProfle)
-    const credential = await signInResponse.user.getIdToken()
+    const credential = await signInResponse.user.getIdToken(true)
     res.status(200).json({ message: 'Masuk Berhasil', credential })
   } catch (error) {
     res.status(500).json({ error: error.message })

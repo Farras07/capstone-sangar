@@ -2,7 +2,7 @@ const db = require('../config/dbConfig')
 const gc = require('../config/storageConfig')
 const bucket = gc.bucket('user-flowercapstone') // should be your bucket name
 const NotFoundError = require('../exceptions/NotFoundError')
-const ClientError = require('../exceptions/ClientError')
+
 class UserServices {
   constructor () {
     this._db = db
@@ -45,6 +45,56 @@ class UserServices {
       return file.name
     } catch (error) {
       return error
+    }
+  }
+
+  async updateUser(payload, userId, userEmail) {
+    try {
+      if (payload.cover !== undefined) {
+        const query = db.collection('users').where('id', '==', userId)
+        const snapshot = await query.get()
+        await this.deleteUserImage(snapshot)
+
+        const { cover: { originalname, buffer } } = payload
+        const filename = `${userId}_${originalname}`
+        const file = await this.uploadUserImage(filename, buffer)
+        const imageUrl = `${process.env.GS_URL_USER}/${file}`
+        payload.cover = imageUrl
+      }
+      console.log('ddd')
+      console.log(payload)
+      const doc = db.collection('users').doc(userEmail)
+      await doc.update(payload)
+    } catch (error) {
+      console.log(error)
+      throw error
+    }
+  }
+
+  async deleteUserImage (data) {
+    try {
+      const filename = await Promise.all(data.docs.map(async (doc) => {
+        const userData = doc.data()
+        console.log(userData)
+        const coverFile = userData.cover.split('/').pop()
+        console.log(coverFile)
+        return coverFile
+      }))
+      const file = bucket.file(filename)
+  
+      // Check if the file exists
+      const exists = await file.exists()
+  
+      if (exists[0]) {
+        // File exists, so delete it
+        await file.delete()
+        console.log(`File ${filename} deleted successfully`)
+      } else {
+        throw new NotFoundError('Image File Not Found')
+      }
+    } catch (error) {
+      console.log(error)
+      throw error
     }
   }
 }
