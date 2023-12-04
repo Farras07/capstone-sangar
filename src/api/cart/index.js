@@ -3,7 +3,7 @@ const router = express.Router()
 const CartHandler = require('./handler')
 const validator = require('../../validator/cart')
 const CartServices = require('../../services/cartServices')
-const AuthenticationServices = require('../../services/authenticationServices')
+const AuthorizationServices = require('../../services/authorizationServices')
 const cartServices = new CartServices()
 const handler = new CartHandler(cartServices, validator)
 
@@ -22,7 +22,7 @@ const handler = new CartHandler(cartServices, validator)
 router.get('/', async (req, res) => {
   try {
     const token = req.headers.authorization
-    const decodedToken = await AuthenticationServices(token)
+    const decodedToken = await AuthorizationServices(token)
     const { uid: userId } = decodedToken
 
     const carts = await handler.getCartHandler(userId)
@@ -35,21 +35,45 @@ router.get('/', async (req, res) => {
   }
 })
 
-router.put('/', async (req, res) => {
+router.post('/product', async (req, res) => {
   try {
     const token = req.headers.authorization
-    const decodedToken = await AuthenticationServices(token)
+    const decodedToken = await AuthorizationServices(token)
     const { uid: userId } = decodedToken
+    const { productId } = req.body
+    console.log('halooo')
+    await handler.postProductToCartHandler(userId, req.body, productId)
 
-    const updatedCart = await handler.updateCartHandler(userId, req.body)
-
-    if (!updatedCart) {
-      return res.status(404).json({ error: 'Cart item not found' })
-    }
-
-    res.json(updatedCart)
+    res.status(200).json({
+      status: 'success',
+      message: 'success add product to cart'
+    })  
   } catch (error) {
-    res.status(500 || error.statusCode).json({ error: error.message })
+    res.status(500 || error.statusCode).json({
+      status: 'Fail',
+      message: error.message
+    })
+  }
+})
+
+router.put('/product/:productId', async (req, res) => {
+  try {
+    const token = req.headers.authorization
+    const decodedToken = await AuthorizationServices(token)
+    const { uid: userId } = decodedToken
+    const productId = req.params.productId
+    console.log(productId)
+    await handler.updateCartHandler(userId, req.body, productId)
+
+    res.status(200).json({
+      status: 'success',
+      message: 'success update product in cart'
+    })  
+  } catch (error) {
+    res.status(500 || error.statusCode).json({
+      status: 'Fail',
+      message: error.message
+    })  
   }
 })
 // router.get('/:id', async (req, res) => {

@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-return */
+/* eslint-disable array-callback-return */
 const db = require('../config/dbConfig')
 const NotFoundError = require('../exceptions/NotFoundError')
 // const ClientError = require('../exceptions/ClientError')
@@ -14,10 +16,10 @@ class CartServices {
       // Implementation to retrieve carts
       const querySnapshot = await db.collection('carts').where('userId', '==', userId).get()
 
-      const cartsData = []
+      let cartsData = null
       querySnapshot.forEach((doc) => {
         const cartData = doc.data()
-        cartsData.push(cartData)
+        cartsData = cartData
       })
 
       if (cartsData.length === 0) {
@@ -31,24 +33,6 @@ class CartServices {
       throw error
     }
   }
-  
-  // async addCart(data) {
-  //   try {
-  //     // Implementation to add a new cart
-  //     // Make sure to adjust this method based on your data structure and requirements
-  //     const docRef = await this._db.collection('carts').add(data)
-    
-  //     console.log('Cart added successfully with ID:', docRef.id)
-  
-  //     // Update the added cart with the generated ID
-  //     await docRef.update({ id: docRef.id })
-  
-  //     return { id: docRef.id, ...data }
-  //   } catch (error) {
-  //     console.error('Error adding cart:', error)
-  //     throw error
-  //   }
-  // }
 
   async addCart (data) {
     try {
@@ -60,48 +44,86 @@ class CartServices {
     }
   }
 
-  async updateProductInCartQuantity(cartId, quantity) {
+  async addProductToCart(userId, payload) {
     try {
-      const docRef = this._db.collection('carts').doc(cartId)
+      const querySnapshot = await db.collection('carts').where('userId', '==', userId).get()
 
-      const doc = await docRef.get()
-
-      if (!doc.exists) {
+      if (querySnapshot.empty) {
         throw new NotFoundError('Cart not found')
       }
 
-      await docRef.update({ quantity })
+      let productsData = null
+      console.log('halooo')
+      querySnapshot.forEach((data) => { 
+        const { products } = data.data()
+        productsData = products
+      })
 
-      console.log('Cart quantity updated successfully')
+      productsData.push(payload)
+      const docRef = querySnapshot.docs[0].ref
 
+      const total = productsData.reduce((acc, curr) => {
+        return acc + curr.subtotal
+      }, 0)
+      console.log(productsData)
+      await docRef.update({
+        total,
+        products: productsData
+      })
+
+      console.log('Update successful')
+    } catch (error) {
+      console.error(error)
+      throw error
+    }
+  }
+ 
+  async updateProductInCart(userId, payload, productId) {
+    try {
+      const querySnapshot = await db.collection('carts').where('userId', '==', userId).get()
+
+      if (querySnapshot.empty) {
+        throw new NotFoundError('Cart not found')
+      }
+
+      let productsData = null
+      querySnapshot.forEach((data) => { 
+        const { products } = data.data()
+        productsData = products
+      })
+
+      const existingProductIndex = productsData.findIndex((product) => product.productId === productId)
+
+      console.log(existingProductIndex)
+
+      if (existingProductIndex !== -1) {
+        productsData[existingProductIndex].quantity = (payload.quantity !== undefined ? payload.quantity : productsData[existingProductIndex].quantity) 
+        productsData[existingProductIndex].varian = (payload.varian !== undefined ? payload.varian : productsData[existingProductIndex].varian)
+        productsData[existingProductIndex].subtotal = productsData[existingProductIndex].quantity * productsData[existingProductIndex].price
+      } else {
+        throw new NotFoundError('Product not found In Cart')
+      }
+
+      if (productsData[existingProductIndex].quantity === 0) {
+        productsData.splice(existingProductIndex, 1) 
+      }
+
+      const total = productsData.reduce((acc, curr) => {
+        return acc + curr.subtotal
+      }, 0)
+
+      const docRef = querySnapshot.docs[0].ref
+
+      await docRef.update({
+        total,
+        products: productsData
+      }) 
       return { message: 'Cart quantity updated successfully' }
     } catch (error) {
       console.error('Error updating cart quantity:', error)
       throw error
     }
   }
-
-  // async deleteCart(cartId) {
-  //   try {
-  //     // Implementation to delete a cart
-  //     // Make sure to adjust this method based on your data structure and requirements
-  //     const docRef = this._db.collection('carts').doc(cartId)
-  //     const doc = await docRef.get()
-
-  //     if (!doc.exists) {
-  //       throw new NotFoundError('Cart not found')
-  //     }
-
-  //     await docRef.delete()
-
-  //     console.log('Cart deleted successfully')
-
-  //     return { message: 'Cart deleted successfully' }
-  //   } catch (error) {
-  //     console.error('Error deleting cart:', error)
-  //     throw error
-  //   }
-  // }
 }
 
 module.exports = CartServices

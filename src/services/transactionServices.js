@@ -8,7 +8,7 @@ class TransactionServices {
   async addTransaction(payload) {
     console.log(payload)
     try {
-      await this._db.collection('transactions').add(payload)
+      await this._db.collection('transactions').doc(payload.id).set(payload)
       return payload.id
     } catch (error) {
       console.log(error)

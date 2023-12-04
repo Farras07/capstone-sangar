@@ -4,25 +4,19 @@ const postSellerPayloadSchema = Joi.object({
   name: Joi.string().required(),  
   description: Joi.string().required(),
   cover: Joi.string().valid('image/apng', 'image/avif', 'image/gif', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'),
-  location: Joi.string().required(),
-  location_coordinate: Joi.string().required()
+  address: Joi.string().required(),
+  locationLatitude: Joi.number(),
+  locationLongitude: Joi.number()
 })
 
-const putFlowerPayloadSchema = Joi.object({
-  flowerName: Joi.string(),
-  price: Joi.number(),
+const putSellerPayloadSchema = Joi.object({
   description: Joi.string(),
   cover: Joi.string().valid('image/apng', 'image/avif', 'image/gif', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'),
-  stock: Joi.number(),
-  varian: Joi.array().items(Joi.string()),
-  category: Joi.array().items(Joi.string())
+  address: Joi.string(),
+  locationLatitude: Joi.number(),
+  locationLongitude: Joi.number()
 })
-
-// const getSellerFlowerByIdSchema = Joi.object({
-//   id: Joi.string().required(),
-//   sellerId: Joi.object().required()
-// })
-
 module.exports = {
-  postSellerPayloadSchema
+  postSellerPayloadSchema,
+  putSellerPayloadSchema
 }

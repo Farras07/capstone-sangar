@@ -1,18 +1,18 @@
 const { nanoid } = require('nanoid')
+const CartServices = require('../../services/cartServices')
+const cartServices = new CartServices()
 class TransactionHandler {
   constructor (services, validator) {
     this._service = services
+    this._cartService = cartServices
     this._validator = validator
   }
   
-  async postTransactionHandler (userId, payload) {
-    await this._validator.validatePostTransactionPayload(payload)
+  async postTransactionHandler (userId) {
+    // await this._validator.validatePostTransactionPayload(payload)
+    const cartData = await this._cartService.getCart(userId)
+    const { total, products } = cartData
     const id = `TRK-${nanoid(16)}`
-    const total = payload.products.reduce((acc, curr) => {
-      return acc + (curr.price * curr.quantity)
-    }, 0)
-    console.log(`hasil = ${total}`)
-
     const dateOptions = {
       year: 'numeric',
       month: '2-digit',
@@ -25,15 +25,15 @@ class TransactionHandler {
     }
 
     const currentDate = new Date().toLocaleDateString('en-US', dateOptions)
-    payload = {
-      ...payload,
+    const dataTransaction = {
       id,
       userId,
+      products,
       total,
       date: currentDate,
       status: 'Waiting for Payment'
     }
-    const data = await this._service.addTransaction(payload)
+    const data = await this._service.addTransaction(dataTransaction)
     return data
   }
 

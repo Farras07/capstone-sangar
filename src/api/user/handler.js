@@ -19,25 +19,25 @@ class UserHandler {
       emailVerified: true,
       disabled: false
     })
-    const filename = `${userRecord.uid}_${image.originalname}`
-    const buffer = image.buffer
-    const file = await this._service.uploadUserImage(filename, buffer)
-    const imageUrl = `${process.env.GS_URL_USER}/${file}`
-    
-    await admin.auth().updateUser(userRecord.uid, {
-      photoURL: imageUrl 
-    })
-    
+
+    if (image !== undefined) {
+      const filename = `${userRecord.uid}_${image.originalname}`
+      const buffer = image.buffer
+      const file = await this._service.uploadUserImage(filename, buffer)
+      const imageUrl = `${process.env.GS_URL_USER}/${file}`
+      await admin.auth().updateUser(userRecord.uid, {
+        photoURL: imageUrl 
+      })
+      payload.cover = imageUrl
+    }
+    const { locationLatitude, locationLongitude, password, ...newObject } = payload 
     const user = {
+      ...newObject,
       id: userRecord.uid,
-      fullname: payload.fullname,
-      username: payload.username,
-      email: payload.email,
-      address: payload.address,
-      location_coordinate: payload.location_coordinate,
-      contact: payload.contact,
-      cover: imageUrl,
-      isSeller: false
+      location_coordinate: {
+        latitude: locationLatitude,
+        longitude: locationLongitude
+      }
     }
 
     const cartData = {
@@ -61,7 +61,17 @@ class UserHandler {
       await this._validator.validatePutUserPayload(payload)
   
       if (cover !== undefined) payload.cover = cover
-      await this._service.updateUser(payload, userId, userEmail)
+      let { locationLatitude: latitude, locationLongitude: longitude, ...newObject } = payload
+
+      if (latitude !== undefined && longitude !== undefined) {
+        latitude = Number(latitude)
+        longitude = Number(longitude)
+        newObject.location_coordinate = {
+          latitude,
+          longitude
+        } 
+      } 
+      await this._service.updateUser(newObject, userId, userEmail)
     } catch (error) {
       console.log(error)
       throw error
