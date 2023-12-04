@@ -8,7 +8,9 @@ const {
 const FlowersValidator = {
   validatePostFlowerPayload: (payload) => {
     const dataForValidate = payload
-    dataForValidate.cover = payload.cover.mimetype
+    if (dataForValidate.cover !== undefined) {
+      dataForValidate.cover = payload.cover.mimetype
+    }
     const validationResult = postFlowerPayloadSchema.validate(dataForValidate)
     if (validationResult.error) {
       throw new InvariantError(validationResult.error.message)

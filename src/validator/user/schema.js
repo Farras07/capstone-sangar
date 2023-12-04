@@ -6,7 +6,8 @@ const addUserPayloadSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
   address: Joi.string().required(),
-  location_coordinate: Joi.string(),
+  locationLatitude: Joi.number(),
+  locationLongitude: Joi.number(),
   contact: Joi.string().required(),
   cover: Joi.string().valid('image/apng', 'image/avif', 'image/gif', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp')
 })
@@ -15,7 +16,8 @@ const putUserPayloadSchema = Joi.object({
   fullname: Joi.string(),
   username: Joi.string(),
   address: Joi.string(),
-  location_coordinate: Joi.string(),
+  locationLatitude: Joi.number(),
+  locationLongitude: Joi.number(),
   contact: Joi.string(),
   cover: Joi.string().valid('image/apng', 'image/avif', 'image/gif', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp')
 })

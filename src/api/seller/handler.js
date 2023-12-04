@@ -1,6 +1,8 @@
 const { nanoid } = require('nanoid')
 const FlowerService = require('../../services/flowerServices')
 const flowerValidator = require('../../validator/flowers')
+const InvariantError = require('../../exceptions/InvariantError')
+
 class SellerHandler {
   constructor (validator, services) {
     // this._service = service
@@ -11,17 +13,48 @@ class SellerHandler {
   }
 
   async postSellerHandler (credentialId, payload) {
-    const image = payload.cover
+    const image = payload.cover !== undefined ? payload.cover : undefined
     await this._validator.validatePostSellerPayload(payload)
     const sellerId = `seller-${nanoid(16)}`
-    payload = {
-      ...payload,
-      sellerId,
-      ownerId: credentialId,
-      cover: image
+
+    if (image !== undefined) payload.cover = image
+    let { locationLatitude: latitude, locationLongitude: longitude, ...newObject } = payload
+
+    if (latitude !== undefined && longitude !== undefined) {
+      latitude = Number(latitude)
+      longitude = Number(longitude)
+      newObject.location_coordinate = {
+        latitude,
+        longitude
+      } 
     }
-    const id = await this._sellerServices.addSeller(payload)
+    newObject = {
+      ...newObject,
+      sellerId,
+      ownerId: credentialId
+    }
+    const id = await this._sellerServices.addSeller(newObject)
     return id
+  }
+
+  async putSellerByIdHandler(sellerId, payload) {
+    const image = payload.cover !== undefined ? payload.cover : undefined
+    await this._validator.validatePutSellerPayload(payload)
+    
+    if (image !== undefined) payload.cover = image
+
+    let { locationLatitude: latitude, locationLongitude: longitude, ...newObject } = payload
+
+    if (latitude !== undefined && longitude !== undefined) {
+      latitude = Number(latitude)
+      longitude = Number(longitude)
+      newObject.location_coordinate = {
+        latitude,
+        longitude
+      } 
+    } 
+
+    await this._sellerServices.putSellerById(sellerId, newObject)
   }
 
   async getSellerByIdHandler (sellerId) {
@@ -45,7 +78,9 @@ class SellerHandler {
   }
 
   async addSellerFlowerHandler (payload, ownerId) {
-    const { cover, price, stock } = payload
+    const { price, stock } = payload
+    console.log('payload')
+    console.log(payload)
     await this._flowerValidator.validatePostFlowerPayload(payload)
     const sellerData = await this._sellerServices.getSellerByOwnerId(ownerId)
     const { sellerId } = sellerData
@@ -57,7 +92,6 @@ class SellerHandler {
       id,
       sellerId,
       price: priceNum,
-      cover,
       stock: stockNum
     }
     await this._flowerService.addFlower(payload)

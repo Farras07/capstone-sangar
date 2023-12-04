@@ -1,11 +1,9 @@
 const Joi = require('joi')
 
 const postCartPayloadSchema = Joi.object({
-  flowerName: Joi.string().required(),
-  cover: Joi.string().valid('image/apng', 'image/avif', 'image/gif', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'),
-  price: Joi.number().required(),
+  productId: Joi.string().required(),
   quantity: Joi.number().required(),
-  totalPrice: Joi.number().required()
+  varian: Joi.string()
 })
 
 const getCartPayloadSchema = Joi.object({
@@ -13,11 +11,8 @@ const getCartPayloadSchema = Joi.object({
 })
 
 const putCartPayloadSchema = Joi.object({
-  flowerName: Joi.string().required(),
-  cover: Joi.string().valid('image/apng', 'image/avif', 'image/gif', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'),
-  price: Joi.number().required(),
-  quantity: Joi.number().required(),
-  totalPrice: Joi.number().required()
+  quantity: Joi.number(),
+  varian: Joi.string()
 })
 
 module.exports = {

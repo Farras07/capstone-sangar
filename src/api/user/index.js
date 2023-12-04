@@ -3,7 +3,7 @@ const router = express.Router()
 const UserHandler = require('./handler')
 const validator = require('../../validator/user')
 const UserServices = require('../../services/userServices')
-const AuthenticationServices = require('../../services/authenticationServices')
+const AuthorizationServices = require('../../services/authorizationServices')
 
 const userServices = new UserServices()
 const handler = new UserHandler(userServices, validator)
@@ -13,9 +13,18 @@ const upload = multer()
 router.post('/', upload.single('cover'), async (req, res) => {
   try {
     const image = req.file
-    req.body.cover = req.file
+    if (req.file) req.body.cover = req.file
+
     const userId = await handler.postUserHandler(req.body, image)
-    res.status(201).json({ message: 'User Created', id: userId })
+    res.status(201).json({ 
+      status: 'success', 
+      message: 'User Created', 
+      data: {
+        user: {
+          id: userId
+        }
+      }  
+    })
   } catch (error) {
     res.status(500 || error.statusCode).send({
       status: 'Fail',
@@ -27,7 +36,7 @@ router.post('/', upload.single('cover'), async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const token = req.headers.authorization
-    const decodedToken = await AuthenticationServices(token)
+    const decodedToken = await AuthorizationServices(token)
     const { uid: userId } = decodedToken
     console.log(userId)
     const data = await handler.getUserByUserIdHandler(userId)
@@ -50,7 +59,7 @@ router.get('/', async (req, res) => {
 router.put('/', upload.single('cover'), async (req, res) => {
   try {
     const token = req.headers.authorization
-    const decodedToken = await AuthenticationServices(token)
+    const decodedToken = await AuthorizationServices(token)
     const { uid: userId, email } = decodedToken
     console.log(decodedToken)
     

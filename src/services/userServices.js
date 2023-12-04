@@ -51,11 +51,8 @@ class UserServices {
   async updateUser(payload, userId, userEmail) {
     try {
       if (payload.cover !== undefined) {
-        const query = db.collection('users').where('id', '==', userId)
-        const snapshot = await query.get()
-        await this.deleteUserImage(snapshot)
-
         const { cover: { originalname, buffer } } = payload
+        console.log(payload.cover)
         const filename = `${userId}_${originalname}`
         const file = await this.uploadUserImage(filename, buffer)
         const imageUrl = `${process.env.GS_URL_USER}/${file}`
@@ -76,6 +73,7 @@ class UserServices {
       const filename = await Promise.all(data.docs.map(async (doc) => {
         const userData = doc.data()
         console.log(userData)
+        console.log(userData.cover)
         const coverFile = userData.cover.split('/').pop()
         console.log(coverFile)
         return coverFile

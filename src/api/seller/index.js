@@ -4,7 +4,7 @@ const multer = require('multer')
 const validator = require('../../validator/seller')
 const SellerHandler = require('./handler')
 const upload = multer()
-const AuthenticationServices = require('../../services/authenticationServices')
+const AuthorizationServices = require('../../services/authorizationServices')
 const SellerServices = require('../../services/sellerServices')
 const sellerServices = new SellerServices()
 const handler = new SellerHandler(validator, sellerServices)
@@ -12,9 +12,9 @@ const handler = new SellerHandler(validator, sellerServices)
 router.post('/', upload.single('cover'), async (req, res) => {
   try {
     const token = req.headers.authorization
-    const decodedToken = await AuthenticationServices(token)
+    const decodedToken = await AuthorizationServices(token)
     const { uid: credentialId } = decodedToken
-    req.body.cover = req.file
+    if (req.file) req.body.cover = req.file
     const sellerId = await handler.postSellerHandler(credentialId, req.body)
 
     res.status(201)
@@ -36,7 +36,7 @@ router.post('/', upload.single('cover'), async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const token = req.headers.authorization
-    const decodedToken = await AuthenticationServices(token)
+    const decodedToken = await AuthorizationServices(token)
     const { uid: ownerId } = decodedToken
     console.log(ownerId)
     const data = await handler.getSellerByOwnerIdHandler(ownerId)
@@ -76,6 +76,30 @@ router.get('/:sellerId', async (req, res) => {
   }
 })
 
+router.put('/:sellerId', upload.single('cover'), async (req, res) => {
+  try {
+    const { sellerId } = req.params
+    const token = req.headers.authorization
+    await AuthorizationServices(token)
+    if (req.file) req.body.cover = req.file
+
+    await handler.putSellerByIdHandler(sellerId, req.body)
+    res.status(200)
+    res.send(
+      { 
+        status: 'success',
+        message: 'Success update seller'
+      }
+    )
+  } catch (error) {
+    res.status(error.statusCode || 500).send({
+      status: 'Fail',
+      message: error.message
+    })
+  }
+})
+
+// route seller flower
 router.get('/:sellerId/flowers', async (req, res) => {
   try {
     const data = await handler.getSellerFlowersHandler(req.params.sellerId)
@@ -118,9 +142,9 @@ router.get('/:sellerId/flowers/:id', async (req, res) => {
 router.post('/flowers', upload.single('cover'), async (req, res) => {
   try {
     const token = req.headers.authorization
-    const decodedToken = await AuthenticationServices(token)
+    const decodedToken = await AuthorizationServices(token)
     const { uid: ownerId } = decodedToken
-    req.body.cover = req.file
+    if (req.file) req.body.cover = req.file
 
     const id = await handler.addSellerFlowerHandler(req.body, ownerId)
     
@@ -142,7 +166,7 @@ router.post('/flowers', upload.single('cover'), async (req, res) => {
 router.put('/flowers/:id', upload.single('cover'), async (req, res) => {
   try {
     const token = req.headers.authorization
-    const decodedToken = await AuthenticationServices(token)
+    const decodedToken = await AuthorizationServices(token)
     const { uid: ownerId } = decodedToken
 
     const { id: flowerId } = req.params
@@ -171,7 +195,7 @@ router.put('/flowers/:id', upload.single('cover'), async (req, res) => {
 router.delete('/flowers/:id', async (req, res) => {
   try {
     const token = req.headers.authorization
-    const decodedToken = await AuthenticationServices(token)
+    const decodedToken = await AuthorizationServices(token)
     const { uid: ownerId } = decodedToken
 
     const { id: flowerId } = req.params

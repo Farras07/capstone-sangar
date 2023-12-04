@@ -1,73 +1,13 @@
 /* eslint-disable no-underscore-dangle */
 const admin = require('../config/firebaseAdmin')
-const { getAuth, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } = require('firebase/auth')
+const { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } = require('firebase/auth')
 const app = require('../config/firebaseConfig')
 const UserServices = require('../services/userServices')
+const AuthenticationServices = require('../services/authenticationServices')
+const AuthenticationError = require('../exceptions/AuthenticationError')
 
 const userServices = new UserServices()
 const auth = getAuth(app)
-
-// exports.signup = async (req, res) => {
-//   try {
-//     const image = req.file
-//     req.body.cover = req.file
-//     await validator.validatePostUserPayload(req.body)
-//     const userRecord = await admin.auth().createUser({
-//       displayName: req.body.username,
-//       email: req.body.email,
-//       password: req.body.password,
-//       // phoneNumber: req.body.contact,
-//       emailVerified: true,
-//       disabled: false
-//     })
-//     const filename = `${userRecord.uid}_${image.originalname}`
-//     const buffer = image.buffer
-//     const file = await userServices.uploadUserImage(filename, buffer)
-//     const imageUrl = `${process.env.GS_URL_USER}/${file}`
-
-//     await admin.auth().updateUser(userRecord.uid, {
-//       photoURL: imageUrl 
-//     })
-
-//     const user = {
-//       id: userRecord.uid,
-//       fullname: req.body.fullname,
-//       username: req.body.username,
-//       email: req.body.email,
-//       address: req.body.address,
-//       location_coordinate: req.body.location_coordinate,
-//       contact: req.body.contact,
-//       cart: [],
-//       image: imageUrl,
-//       isSeller: false
-//     }
-//     await userServices.addUser(user)
-//     res.status(200).json({ message: 'User Created', id: user.id })
-//   } catch (error) {
-//     res.status(500).send({
-//       status: 'Fail',
-//       message: error.message
-//     })  
-//   }
-// }
-// exports.signup = async (req, res) => {
-//   try {
-//     // await validator.validatePostUserPayload(req.body)
-//     const user = {
-//       email: req.body.email,
-//       passord: req.body.password
-//     }
-//     const userRecord = await admin.auth().createUser({
-//       email: user.email,
-//       password: user.passord,
-//       emailVerified: false,
-//       disabled: false
-//     })
-//     res.status(200).json({ message: 'User Created', userRecord })
-//   } catch (error) {
-//     res.status(500).json({ status: 'fail', message: error.message })
-//   }
-// }
 
 exports.login = async (req, res) => {
   const user = {
@@ -85,28 +25,16 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: error.message })
   }
 }
-// exports.login = async (req, res) => {
-//   const user = {
-//     email: req.body.email,
-//     password: req.body.password
-//   }
-//   try {
-//     const userRecord = await admin.auth().getUserByEmail(user.email)
-//     console.log(userRecord)
-//     res.status(200).json({ message: 'Masuk Berhasil', userRecord })
-//   } catch (error) {
-//     res.status(500).json({ error: 'Gagal Saat Masuk' })
-//   }
-// }
 exports.logout = async (req, res) => {
+  const token = req.headers.authorization
+  const decodedToken = await AuthenticationServices(token)
+  const { uid: userId } = decodedToken
   try {
-    console.log('before')
-    const response = await signOut(auth)
-    console.log('after')
-    console.log(auth.currentUser)
-    res.status(200).json({ message: 'logout Berhasil', response })
+    await admin.auth().revokeRefreshTokens(userId)
+    res.status(200).json({ status: 'success', message: 'Logout Berhasil' })
   } catch (error) {
-    res.status(500).json({ error: error.message })
+    console.error(error)
+    res.status(500).json({ status: 'fail', error: 'Gagal Saat Logout' })
   }
 }
 
@@ -120,13 +48,25 @@ exports.resetPassword = async (req, res) => {
   }
 }
 
-// exports.logout = async (req, res) => {
-//   const token = req.headers.authorization
+exports.refreshAccessToken = async (req, res) => {
+  try {
+    const { userId } = req.body
+    const user = await admin.auth().getUser(userId)
+    const refreshToken = user.tokensValidAfterTime
+  
+    const currentTimestamp = Date.now()
+    const refreshThreshold = 60 * 60 * 1000 // 1 hour in milliseconds
+  
+    if (currentTimestamp - refreshToken > refreshThreshold) {
+      console.log('Refresh token has expired or is not valid anymore.')
+      throw new AuthenticationError('Refresh token has expired or is not valid anymore.')
+    }
 
-//   try {
-//     await admin.auth().revokeRefreshTokens(token)
-//     res.status(200).json({ message: 'Logout Berhasil' })
-//   } catch (error) {
-//     res.status(500).json({ error: 'Gagal Saat Logout' })
-//   }
-// }
+    const customToken = await admin.auth().createCustomToken(userId)
+    // const signInResponse = await admin.auth().signInWithCustomToken(customToken)
+
+    res.status(201).json({ status: 'success', message: 'Refreshing Access Token Success', credential: customToken })
+  } catch (error) {
+    res.status(500).json({ status: 'fail', error: error.message })
+  }
+}

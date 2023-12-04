@@ -1,7 +1,10 @@
+const FlowerServices = require('../../services/flowerServices')
+const flowerServices = new FlowerServices()
 class CartHandler {
   constructor(services, validator) {
     this._service = services
     this._validator = validator
+    this._flowerServices = flowerServices
   }
 
   // async getCartsHandler() {
@@ -30,25 +33,39 @@ class CartHandler {
     }
   }
 
-  async addCartHandler(payload) {
+  async postProductToCartHandler(userId, payload, productId) {
     try {
       // Validate the payload using the validator
       this._validator.validatePostCartPayload(payload)
+      console.log('lahh')
+      const flowerData = await this._flowerServices.getFlowerById(productId)
+      const { cover, price, flowerName } = flowerData
 
+      const total = price * payload.quantity
+      console.log('jajaj')
+      payload = {
+        ...payload,
+        productId,
+        cover,
+        price,
+        flowerName,
+        subtotal: total
+      }
+      console.log(payload)
       // Implementation to add a new cart
-      return await this._service.addCart(payload)
+      return await this._service.addProductToCart(userId, payload)
     } catch (error) {
       throw new Error(`Failed to add cart: ${error.message}`)
     }
   }
 
-  async updateCartHandler(userId, payload) {
+  async updateCartHandler(userId, payload, productId) {
     try {
       // Validate the payload using the validator
       this._validator.validatePutCartPayload(payload)
 
       // Implementation to update an existing cart
-      return await this._service.updateCartQuantity(userId, payload)
+      return await this._service.updateProductInCart(userId, payload, productId)
     } catch (error) {
       throw new Error(`Failed to update cart: ${error.message}`)
     }

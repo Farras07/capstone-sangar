@@ -7,7 +7,9 @@ const {
 const UserValidator = {
   validatePostUserPayload: (payload) => {
     const dataForValidate = payload
-    dataForValidate.cover = payload.cover.mimetype
+    if (dataForValidate.cover !== undefined) {
+      dataForValidate.cover = payload.cover.mimetype
+    }    
     const validationResult = addUserPayloadSchema.validate(dataForValidate)
     if (validationResult.error) {
       throw new InvariantError(validationResult.error.message)

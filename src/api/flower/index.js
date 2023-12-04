@@ -32,7 +32,7 @@ router.get('/:id', async (req, res) => {
     res.send(
       {
         status: 'success',
-        message: 'Success get flowers',
+        message: 'Success get flower',
         data
       }
     )

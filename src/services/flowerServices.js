@@ -38,7 +38,6 @@ class FlowerServices {
       if (!flowerData) {
         throw new NotFoundError('Flower not found')
       }
-      console.log(flowerData)
   
       return flowerData
     } catch (error) {
@@ -134,26 +133,30 @@ class FlowerServices {
 
   async addFlower (data) {
     try {
-      const { id, flowerName, sellerId, cover: { originalname, buffer } } = data
-      const filename = `${id}_${originalname}`
+      const { id, flowerName, sellerId } = data
+      console.log('before')
+      console.log(data)
       const isFlowerExist = await this.verifyFlowersExistByName(flowerName, sellerId)
-
       if (isFlowerExist) {
         throw new ClientError('Flower already exist')
       }
 
-      const file = await this.uploadFlowerImage(filename, buffer)
-      console.log(file)
-      if (file) {
-        const imageUrl = `${process.env.GS_URL}/${file}`
-        data.cover = imageUrl
-        const doc = db.collection('products').doc(sellerId).collection('flowers').doc(flowerName)
-        await doc.set(data)
-        return file
-      } else {
-        console.error('Failed to upload flower image')
-        return null
+      if (data.cover !== undefined) {
+        const filename = `${id}_${data.cover.originalname}`
+        const file = await this.uploadFlowerImage(filename, data.cover.buffer)
+        if (file) {
+          const imageUrl = `${process.env.GS_URL}/${file}`
+          data.cover = imageUrl
+          return file
+        } else {
+          console.error('Failed to upload flower image')
+          return null
+        }
       }
+      console.log(data)
+      const doc = db.collection('products').doc(sellerId).collection('flowers').doc(flowerName)
+      await doc.set(data)
+      return id
     } catch (error) {
       console.error(error)
       throw error
@@ -192,12 +195,11 @@ class FlowerServices {
       // Get the documents that match the query
       const snapshot = await query.get()
       
-      await this.deleteFlowerImage(snapshot)
-      
       // Check if there are matching documents
       if (!snapshot.empty) {
         // Delete each matching document
-        snapshot.forEach((doc) => {
+        await snapshot.forEach((doc) => {
+          if (doc.cover !== undefined) this.deleteFlowerImage(snapshot)
           doc.ref.delete()
         })
       }

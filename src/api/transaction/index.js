@@ -3,18 +3,25 @@ const router = express.Router()
 const TransactionHandler = require('./handler')
 const validator = require('../../validator/transaction')
 const TransactionServices = require('../../services/transactionServices')
+const AuthorizationServices = require('../../services/authorizationServices')
+
 const transactionServices = new TransactionServices()
 const handler = new TransactionHandler(transactionServices, validator)
 
-router.get('/:userId', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const { userId } = req.params
+    const token = req.headers.authorization
+    const decodedToken = await AuthorizationServices(token)
+    const { uid: userId } = decodedToken
+
     const data = await handler.getTransactionsByUserIdHandler(userId)
     res.status(200)
     res.send(
       {
         status: 'success',
-        data
+        data: {
+          transactions: [data]
+        }
       }
     )
   } catch (error) {
@@ -25,15 +32,21 @@ router.get('/:userId', async (req, res) => {
   }
 })
 
-router.get('/:userId/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const { userId, id: transactionId } = req.params
+    const { id: transactionId } = req.params
+    const token = req.headers.authorization
+    const decodedToken = await AuthorizationServices(token)
+    const { uid: userId } = decodedToken
+    
     const data = await handler.getTransactionByIdHandler(userId, transactionId)
     res.status(200)
     res.send(
       {
         status: 'success',
-        data
+        data: {
+          transaction: data
+        }
       }
     )
   } catch (error) {
@@ -44,10 +57,14 @@ router.get('/:userId/:id', async (req, res) => {
   }
 })
 
-router.put('/:userId/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
-    const { userId, id: transactionId } = req.params
+    const { id: transactionId } = req.params
     const payload = req.body
+    const token = req.headers.authorization
+    const decodedToken = await AuthorizationServices(token)
+    const { uid: userId } = decodedToken
+
     await handler.putTransactionByIdHandler(userId, transactionId, payload)
     res.status(200)
     res.send(
@@ -64,16 +81,20 @@ router.put('/:userId/:id', async (req, res) => {
   }
 })
 
-router.post('/:userId', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    const { userId } = req.params
-    const productsData = req.body
-    const data = await handler.postTransactionHandler(userId, productsData)
+    const token = req.headers.authorization
+    const decodedToken = await AuthorizationServices(token)
+    const { uid: userId } = decodedToken
+    const data = await handler.postTransactionHandler(userId)
     res.status(201)
     res.send(
       {
         status: 'success',
-        data
+        message: 'Order Success',
+        data: {
+          id: data
+        }
       }
     )
   } catch (error) {
