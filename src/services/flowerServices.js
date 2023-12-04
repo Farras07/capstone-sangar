@@ -108,7 +108,7 @@ class FlowerServices {
         const sellerId = doc.id
         console.log(sellerId)
         if (sellerId) {
-          const flowerQuery = db.collection('products').doc(sellerId).collection('flowers').where('flowerName', '>=', flowerName.toLowerCase()).where('flowerName', '<=', flowerName.toLowerCase() + '\uf8ff').get()
+          const flowerQuery = db.collection('products').doc(sellerId).collection('flowers').where('flowerName', '>=', flowerName.toUpperCase()).where('flowerName', '<=', flowerName + '\uf8ff').orderBy('flowerName').limit(10).get()
           promises.push(flowerQuery)
         }
       })
@@ -120,7 +120,7 @@ class FlowerServices {
           const flower = snap.data()
           flowerData.push(flower)
         })
-        if (flowerData.length === 0) {
+        if (flowerData === null) {
           throw new NotFoundError('Flower not found')
         }
       })
