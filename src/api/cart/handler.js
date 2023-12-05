@@ -43,10 +43,12 @@ class CartHandler {
 
       const total = price * payload.quantity
       console.log('jajaj')
+      if (cover) {
+        payload.cover = cover
+      }
       payload = {
         ...payload,
         productId,
-        cover,
         price,
         flowerName,
         subtotal: total

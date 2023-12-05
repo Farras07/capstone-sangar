@@ -81,29 +81,31 @@ class FlowerServices {
 
   async addFlower (data) {
     try {
-      const { id, flowerName, sellerId } = data
-      console.log('before')
+      const { cover, ...newData } = data
       console.log(data)
+      const { id, flowerName, sellerId } = data
       const isFlowerExist = await this.verifyFlowersExistByName(flowerName, sellerId)
       if (isFlowerExist) {
         throw new ClientError('Flower already exist')
       }
 
-      if (data.cover !== undefined) {
+      if (cover !== undefined) {
         const filename = `${id}_${data.cover.originalname}`
         const file = await this.uploadFlowerImage(filename, data.cover.buffer)
+
+        console.log('file')
+        console.log(file)
         if (file) {
           const imageUrl = `${process.env.GS_URL}/${file}`
-          data.cover = imageUrl
-          return file
+          newData.cover = imageUrl
         } else {
           console.error('Failed to upload flower image')
           return null
         }
       }
-      console.log(data)
+      console.log('haloo')
       const doc = db.collection('products').doc(sellerId).collection('flowers').doc(flowerName)
-      await doc.set(data)
+      await doc.set(newData)
       return id
     } catch (error) {
       console.error(error)
@@ -116,6 +118,7 @@ class FlowerServices {
       if (data.cover !== undefined) {
         const query = db.collection('products').doc(sellerId).collection('flowers').where('id', '==', flowerId)
         const snapshot = await query.get()
+        console.log('before')
         await this.deleteFlowerImage(snapshot)
 
         const { cover: { originalname, buffer } } = data
@@ -125,7 +128,6 @@ class FlowerServices {
         data.cover = imageUrl
       }
       console.log('ddd')
-      console.log(data)
       const doc = db.collection('products').doc(sellerId).collection('flowers').doc(flowerName)
       await doc.update(data)
     } catch (error) {
@@ -171,21 +173,27 @@ class FlowerServices {
     try {
       const filename = await Promise.all(data.docs.map(async (doc) => {
         const flowerData = doc.data()
-        const coverFile = flowerData.cover.split('/').pop()
+        console.log('haloo')
+        const coverFile = flowerData.cover ? flowerData.cover.split('/').pop() : undefined
         console.log(coverFile)
         return coverFile
       }))
-      const file = bucket.file(filename)
-  
-      // Check if the file exists
-      const exists = await file.exists()
-  
-      if (exists[0]) {
-        // File exists, so delete it
-        await file.delete()
-        console.log(`File ${filename} deleted successfully`)
-      } else {
-        throw new NotFoundError('Image File Not Found')
+
+      console.log('filename')
+      if (filename[0] !== undefined) {
+        console.log('hehehe')
+        const file = bucket.file(filename)
+    
+        // Check if the file exists
+        const exists = await file.exists()
+    
+        if (exists[0]) {
+          // File exists, so delete it
+          await file.delete()
+          console.log(`File ${filename} deleted successfully`)
+        } else {
+          throw new NotFoundError('Image File Not Found')
+        }
       }
     } catch (error) {
       console.log(error)

@@ -78,9 +78,7 @@ class SellerHandler {
   }
 
   async addSellerFlowerHandler (payload, ownerId) {
-    const { price, stock } = payload
-    console.log('payload')
-    console.log(payload)
+    const { price, stock, cover } = payload
     await this._flowerValidator.validatePostFlowerPayload(payload)
     const sellerData = await this._sellerServices.getSellerByOwnerId(ownerId)
     const { sellerId } = sellerData
@@ -92,7 +90,8 @@ class SellerHandler {
       id,
       sellerId,
       price: priceNum,
-      stock: stockNum
+      stock: stockNum,
+      cover
     }
     await this._flowerService.addFlower(payload)
     return payload.id
@@ -106,7 +105,6 @@ class SellerHandler {
     const { sellerId } = sellerData
 
     const flowerData = await this._flowerService.getSellerFlowerById(flowerid, sellerId)
-    console.log(flowerData)
     const flowerName = flowerData.flowerName
 
     if (payload.price !== undefined) payload.price = Number(payload.price)
