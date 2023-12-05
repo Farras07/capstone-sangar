@@ -8,7 +8,7 @@ const signInWithGoogle = require('./middleware/googleSignIn.js')
 
 const authRoutes = require('./routes/authRoutes.js')
 const authenticate = require('./middleware/authenticate.js')
-
+const search = require('./api/search')
 const flowers = require('./api/flower')
 const users = require('./api/user')
 const seller = require('./api/seller')
@@ -34,7 +34,7 @@ app.use(bodyParser.json())
 //   })
 // })
 app.use('/auth', authRoutes)
-
+app.use('/search', search)
 app.use('/flower', flowers)
 app.use('/seller', seller)
 app.use('/user', users)

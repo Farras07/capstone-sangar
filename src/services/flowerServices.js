@@ -3,6 +3,7 @@ const gc = require('../config/storageConfig')
 const bucket = gc.bucket('flowers-capstone') // should be your bucket name
 const NotFoundError = require('../exceptions/NotFoundError')
 const ClientError = require('../exceptions/ClientError')
+
 class FlowerServices {
   constructor () {
     this._db = db
@@ -75,6 +76,57 @@ class FlowerServices {
       return flowerData
     } catch (error) {
       console.error(error)
+      throw error
+    }
+  }
+
+  async getSellerFlowerByName(flowerName, sellerId) {
+    try {
+      const querySnapshot = await db.collection('products').doc(sellerId).collection('flowers').where('flowerName', '==', flowerName).get()
+      const flowersData = []
+      querySnapshot.forEach((data) => {
+        const flowerData = data.data()
+        flowersData.push(flowerData)
+      })
+      console.log(sellerId)
+      if (flowersData.length === 0) {
+        throw new NotFoundError('Flower not found')
+      }
+      return flowersData
+    } catch (error) {
+      console.error('Error getting flowers:', error)
+      throw error
+    }
+  }
+
+  async getFlowersByName(flowerName) {
+    try {
+      // const docSnap = await db.collection('products').doc('sellerId').collection('flowers').where('flowerName', '==', flowerName).get()
+      const querySnapshot = await db.collection('products').get()
+      const promises = []
+      querySnapshot.forEach((doc) => {
+        const sellerId = doc.id
+        console.log(sellerId)
+        if (sellerId) {
+          const flowerQuery = db.collection('products').doc(sellerId).collection('flowers').where('flowerName', '>=', flowerName.toUpperCase()).where('flowerName', '<=', flowerName + '\uf8ff').orderBy('flowerName').limit(10).get()
+          promises.push(flowerQuery)
+        }
+      })
+
+      const snapshotArrays = await Promise.all(promises)
+      const flowerData = []
+      snapshotArrays.forEach(snapArray => {
+        snapArray.forEach((snap) => {
+          const flower = snap.data()
+          flowerData.push(flower)
+        })
+        if (flowerData === null) {
+          throw new NotFoundError('Flower not found')
+        }
+      })
+      return flowerData 
+    } catch (error) {
+      console.error('Error getting flowers:', error)
       throw error
     }
   }
