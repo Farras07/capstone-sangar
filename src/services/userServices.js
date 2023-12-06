@@ -58,7 +58,6 @@ class UserServices {
         const imageUrl = `${process.env.GS_URL_USER}/${file}`
         payload.cover = imageUrl
       }
-      console.log('ddd')
       console.log(payload)
       const doc = db.collection('users').doc(userEmail)
       await doc.update(payload)

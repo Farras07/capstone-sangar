@@ -8,7 +8,6 @@ const authenticate = async (credential) => {
     const decodedToken = await admin.auth().verifyIdToken(token, checkRevoked)
     return decodedToken
   } catch (error) {
-    console.log(error)
     throw new AuthenticationError('Unauthenticate')
   }
 }

@@ -20,7 +20,7 @@ exports.login = async (req, res) => {
     console.log('profile')
     console.log(userProfle)
     const credential = await signInResponse.user.getIdToken(true)
-    res.status(200).json({ message: 'Masuk Berhasil', credential })
+    res.status(200).json({ status: 'success', message: 'Masuk Berhasil', credential })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -42,7 +42,7 @@ exports.resetPassword = async (req, res) => {
   const email = req.body.email
   try {
     const response = await sendPasswordResetEmail(auth, email)
-    res.status(200).json({ message: 'Link has been sent to your email', response })
+    res.status(200).json({ status: 'success', message: 'Link has been sent to your email', response })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
