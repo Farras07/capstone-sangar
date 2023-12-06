@@ -72,7 +72,7 @@ router.put('/', upload.single('cover'), async (req, res) => {
     res.status(200)
     res.send({
       status: 'success',
-      message: 'Flower Successfully Updated'
+      message: 'User Successfully Updated'
     })
   } catch (error) {
     res.status(error.statusCode || 500).send({

@@ -41,7 +41,7 @@ class FlowerServices {
   
       return flowerData
     } catch (error) {
-      console.error('Error getting flowers:', error)
+      console.error('Error getting flower:', error)
       throw error
     }
   }
@@ -70,7 +70,7 @@ class FlowerServices {
       })
       
       if (flowerData === null) {
-        throw new NotFoundError('Flowers not found')
+        throw new NotFoundError('Flower not found')
       }
   
       return flowerData
@@ -108,7 +108,8 @@ class FlowerServices {
         const sellerId = doc.id
         console.log(sellerId)
         if (sellerId) {
-          const flowerQuery = db.collection('products').doc(sellerId).collection('flowers').where('flowerName', '>=', flowerName.toUpperCase()).where('flowerName', '<=', flowerName + '\uf8ff').orderBy('flowerName').limit(10).get()
+          // const flowerQuery = db.collection('products').doc(sellerId).collection('flowers').where('flowerName', '>=', flowerName.toUpperCase()).where('flowerName', '<=', flowerName + '\uf8ff').orderBy('flowerName').limit(10).get()
+          const flowerQuery = db.collection('products').doc(sellerId).collection('flowers').where('caseSearch', 'array-contains', flowerName.toLowerCase()).get()
           promises.push(flowerQuery)
         }
       })
@@ -118,9 +119,10 @@ class FlowerServices {
       snapshotArrays.forEach(snapArray => {
         snapArray.forEach((snap) => {
           const flower = snap.data()
-          flowerData.push(flower)
+          const { caseSearch, ...flowerWithoutCaseSearch } = flower
+          flowerData.push(flowerWithoutCaseSearch)
         })
-        if (flowerData === null) {
+        if (flowerData.length === 0) {
           throw new NotFoundError('Flower not found')
         }
       })
@@ -136,6 +138,7 @@ class FlowerServices {
       const { cover, ...newData } = data
       console.log(data)
       const { id, flowerName, sellerId } = data
+      const searchParams = await this.setSeacrhParams(flowerName)
       const isFlowerExist = await this.verifyFlowersExistByName(flowerName, sellerId)
       if (isFlowerExist) {
         throw new ClientError('Flower already exist')
@@ -157,7 +160,9 @@ class FlowerServices {
       }
       console.log('haloo')
       const doc = db.collection('products').doc(sellerId).collection('flowers').doc(flowerName)
-      await doc.set(newData)
+      // await doc.set(newData)
+      await doc.set({ ...newData, caseSearch: searchParams })
+      // await doc.set(data)
       return id
     } catch (error) {
       console.error(error)
@@ -280,6 +285,16 @@ class FlowerServices {
       console.log('No matching documents.')
       return false
     }
+  }
+
+  async setSeacrhParams(flowerName) {
+    const caseSearchList = []
+    let temp = ''
+    for (let i = 0; i < flowerName.length; i++) {
+      temp = temp + flowerName[i]
+      caseSearchList.push(temp.toLowerCase())
+    }
+    return caseSearchList
   }
 }
 module.exports = FlowerServices
