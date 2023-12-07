@@ -82,13 +82,13 @@ class FlowerServices {
 
   async getSellerFlowerByName(flowerName, sellerId) {
     try {
-      const querySnapshot = await db.collection('products').doc(sellerId).collection('flowers').where('flowerName', '==', flowerName).get()
+      const querySnapshot = await db.collection('products').doc(sellerId).collection('flowers').where('caseSearch', 'array-contains', flowerName.toLowerCase()).get()
       const flowersData = []
       querySnapshot.forEach((data) => {
         const flowerData = data.data()
-        flowersData.push(flowerData)
+        const { caseSearch, ...flowerWithoutCaseSearch } = flowerData
+        flowersData.push(flowerWithoutCaseSearch)
       })
-      console.log(sellerId)
       if (flowersData.length === 0) {
         throw new NotFoundError('Flower not found')
       }
