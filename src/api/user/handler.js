@@ -2,10 +2,13 @@ const { nanoid } = require('nanoid')
 const admin = require('../../config/firebaseAdmin')
 const CartServices = require('../../services/cartServices')
 const cartServices = new CartServices()
+const WishlistServices = require('../../services/wishlistServices')
+const wishlistServices = new WishlistServices()
 class UserHandler {
   constructor (services, validator) {
     this._service = services
     this._cartService = cartServices
+    this._wishlistService = wishlistServices
     this._validator = validator
   }
 
@@ -45,8 +48,14 @@ class UserHandler {
       userId: userRecord.uid,
       products: []
     }
+    const wishlistData = {
+      id: `wishlist-${nanoid(16)}`,
+      userId: userRecord.uid,
+      products: []
+    }
     await this._service.addUser(user)
     await this._cartService.addCart(cartData)
+    await this._wishlistService.addWishlist(wishlistData)
     return user.id
   }
 

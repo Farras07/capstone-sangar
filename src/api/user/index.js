@@ -26,7 +26,7 @@ router.post('/', upload.single('cover'), async (req, res) => {
       }  
     })
   } catch (error) {
-    res.status(500 || error.statusCode).send({
+    res.status(500 || error.statusCode).json({
       status: 'Fail',
       message: error.message
     })  
@@ -40,8 +40,7 @@ router.get('/', async (req, res) => {
     const { uid: userId } = decodedToken
     console.log(userId)
     const data = await handler.getUserByUserIdHandler(userId)
-    res.status(200)
-    res.send(
+    res.status(200).json(
       { 
         status: 'success',
         message: 'Success get user',
@@ -49,7 +48,7 @@ router.get('/', async (req, res) => {
       }
     )
   } catch (error) {
-    res.status(error.statusCode || 500).send({
+    res.status(error.statusCode || 500).json({
       status: 'Fail',
       message: error.message
     })
@@ -70,12 +69,12 @@ router.put('/', upload.single('cover'), async (req, res) => {
     await handler.updateUserHandler(req.body, userId, email)
 
     res.status(200)
-    res.send({
+    res.json({
       status: 'success',
       message: 'User Successfully Updated'
     })
   } catch (error) {
-    res.status(error.statusCode || 500).send({
+    res.status(error.statusCode || 500).json({
       status: 'Fail',
       message: error.message
     })

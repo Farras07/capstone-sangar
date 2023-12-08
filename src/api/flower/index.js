@@ -9,8 +9,7 @@ const handler = new FlowerHandler(flowerServices, validator)
 router.get('/', async (req, res) => {
   try {
     const data = await handler.getFlowersHandler()
-    res.status(200)
-    res.send(
+    res.status(200).json(
       {
         status: 'success',
         message: 'Success get flowers',
@@ -18,7 +17,7 @@ router.get('/', async (req, res) => {
       }
     )
   } catch (error) {
-    res.status(error.statusCode || 500).send({
+    res.status(error.statusCode || 500).json({
       status: 'Fail',
       message: error.message
     })
@@ -28,8 +27,7 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
     const data = await handler.getFlowerByIdHandler(id)
-    res.status(200)
-    res.send(
+    res.status(200).json(
       {
         status: 'success',
         message: 'Success get flower',
@@ -37,7 +35,7 @@ router.get('/:id', async (req, res) => {
       }
     )
   } catch (error) {
-    res.status(error.statusCode || 500).send({
+    res.status(error.statusCode || 500).json({
       status: 'Fail',
       message: error.message
     })

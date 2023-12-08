@@ -12,11 +12,6 @@ const postTransactionPayloadSchema = Joi.object({
   ).required()
 })
 
-// const getSellerFlowerByIdSchema = Joi.object({
-//   id: Joi.string().required(),
-//   sellerId: Joi.object().required()
-// })
-
 module.exports = {
   postTransactionPayloadSchema
 }

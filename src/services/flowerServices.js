@@ -16,7 +16,8 @@ class FlowerServices {
       const flowersData = []
       querySnapshot.forEach((doc) => {
         const flowerData = doc.data()
-        flowersData.push(flowerData)
+        const { caseSearch, ...restFlowerData } = flowerData
+        flowersData.push(restFlowerData)
       })
       console.log(flowersData)
   
@@ -31,15 +32,17 @@ class FlowerServices {
     try {
       const querySnapshot = await db.collectionGroup('flowers').where('id', '==', idFlower).get()
   
-      let flowerData = null
+      let flowerDatas = null
       querySnapshot.forEach((doc) => {
-        flowerData = doc.data()
+        const flowerData = doc.data()
+        const { caseSearch, ...restFlowerData } = flowerData
+        flowerDatas = restFlowerData
       })
-      if (!flowerData) {
+      if (!flowerDatas) {
         throw new NotFoundError('Flower not found')
       }
   
-      return flowerData
+      return flowerDatas
     } catch (error) {
       console.error('Error getting flower:', error)
       throw error
@@ -82,17 +85,15 @@ class FlowerServices {
 
   async getSellerFlowerByName(flowerName, sellerId) {
     try {
-      const querySnapshot = await db.collection('products').doc(sellerId).collection('flowers').where('caseSearch', 'array-contains', flowerName.toLowerCase()).get()
-      const flowersData = []
-      querySnapshot.forEach((data) => {
-        const flowerData = data.data()
-        const { caseSearch, ...flowerWithoutCaseSearch } = flowerData
-        flowersData.push(flowerWithoutCaseSearch)
+      console.log(seller)
+      const flowerQuery = await db.collection('products').doc(sellerId).collection('flowers').where('caseSearch', 'array-contains', flowerName.toLowerCase()).get()
+      const flowerData = []
+      flowerQuery.forEach((doc) => {
+        const flower = doc.data()
+        const { caseSearch, ...flowerWithoutCaseSearch } = flower
+        flowerData.push(flowerWithoutCaseSearch)
       })
-      if (flowersData.length === 0) {
-        throw new NotFoundError('Flower not found')
-      }
-      return flowersData
+      return flowerData
     } catch (error) {
       console.error('Error getting flowers:', error)
       throw error
@@ -102,36 +103,51 @@ class FlowerServices {
   async getFlowersByName(flowerName) {
     try {
       // const docSnap = await db.collection('products').doc('sellerId').collection('flowers').where('flowerName', '==', flowerName).get()
-      const querySnapshot = await db.collection('products').get()
-      const promises = []
-      querySnapshot.forEach((doc) => {
-        const sellerId = doc.id
-        console.log(sellerId)
-        if (sellerId) {
-          // const flowerQuery = db.collection('products').doc(sellerId).collection('flowers').where('flowerName', '>=', flowerName.toUpperCase()).where('flowerName', '<=', flowerName + '\uf8ff').orderBy('flowerName').limit(10).get()
-          const flowerQuery = db.collection('products').doc(sellerId).collection('flowers').where('caseSearch', 'array-contains', flowerName.toLowerCase()).get()
-          promises.push(flowerQuery)
-        }
-      })
-
-      const snapshotArrays = await Promise.all(promises)
+      const flowerQuery = await db.collectionGroup('flowers').where('caseSearch', 'array-contains', flowerName.toLowerCase()).get()
       const flowerData = []
-      snapshotArrays.forEach(snapArray => {
-        snapArray.forEach((snap) => {
-          const flower = snap.data()
-          const { caseSearch, ...flowerWithoutCaseSearch } = flower
-          flowerData.push(flowerWithoutCaseSearch)
-        })
-        if (flowerData.length === 0) {
-          throw new NotFoundError('Flower not found')
-        }
+      flowerQuery.forEach((doc) => {
+        const flower = doc.data()
+        const { caseSearch, ...flowerWithoutCaseSearch } = flower
+        flowerData.push(flowerWithoutCaseSearch)
       })
-      return flowerData 
+      return flowerData
     } catch (error) {
       console.error('Error getting flowers:', error)
       throw error
     }
   }
+  // async getFlowersByName(flowerName) {
+  //   try {
+  //     // const docSnap = await db.collection('products').doc('sellerId').collection('flowers').where('flowerName', '==', flowerName).get()
+  //     const querySnapshot = await db.collection('products').get()
+  //     const promises = []
+  //     querySnapshot.forEach((doc) => {
+  //       const sellerId = doc.id
+  //       if (sellerId) {
+  //         // const flowerQuery = db.collection('products').doc(sellerId).collection('flowers').where('flowerName', '>=', flowerName.toUpperCase()).where('flowerName', '<=', flowerName + '\uf8ff').orderBy('flowerName').limit(10).get()
+  //         const flowerQuery = db.collection('products').doc(sellerId).collection('flowers').where('caseSearch', 'array-contains', flowerName.toLowerCase()).get()
+  //         promises.push(flowerQuery)
+  //       }
+  //     })
+
+  //     const snapshotArrays = await Promise.all(promises)
+  //     const flowerData = []
+  //     snapshotArrays.forEach(snapArray => {
+  //       snapArray.forEach((snap) => {
+  //         const flower = snap.data()
+  //         const { caseSearch, ...flowerWithoutCaseSearch } = flower
+  //         flowerData.push(flowerWithoutCaseSearch)
+  //       })
+  //       if (flowerData.length === 0) {
+  //         throw new NotFoundError('Flower not found')
+  //       }
+  //     })
+  //     return flowerData 
+  //   } catch (error) {
+  //     console.error('Error getting flowers:', error)
+  //     throw error
+  //   }
+  // }
 
   async addFlower (data) {
     try {

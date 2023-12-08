@@ -19,7 +19,7 @@ const putFlowerPayloadSchema = Joi.object({
   description: Joi.string(),
   cover: Joi.string().valid('image/apng', 'image/avif', 'image/gif', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'),
   stock: Joi.number(),
-  varian: Joi.array().items(Joi.string()),
+  varian: Joi.array().items(Joi.string()), 
   category: Joi.array().items(Joi.string())
 })
 

@@ -17,8 +17,7 @@ router.post('/', upload.single('cover'), async (req, res) => {
     if (req.file) req.body.cover = req.file
     const sellerId = await handler.postSellerHandler(credentialId, req.body)
 
-    res.status(201)
-    res.send({
+    res.status(201).json({
       status: 'success',
       message: 'Seller Registered',
       data: {
@@ -26,7 +25,7 @@ router.post('/', upload.single('cover'), async (req, res) => {
       }
     })
   } catch (error) {
-    res.status(error.statusCode || 500).send({
+    res.status(error.statusCode || 500).json({
       status: 'Fail',
       message: error.message
     })
@@ -40,8 +39,7 @@ router.get('/', async (req, res) => {
     const { uid: ownerId } = decodedToken
     console.log(ownerId)
     const data = await handler.getSellerByOwnerIdHandler(ownerId)
-    res.status(200)
-    res.send(
+    res.status(200).json(
       { 
         status: 'success',
         message: 'Success get seller',
@@ -49,7 +47,7 @@ router.get('/', async (req, res) => {
       }
     )
   } catch (error) {
-    res.status(error.statusCode || 500).send({
+    res.status(error.statusCode || 500).json({
       status: 'Fail',
       message: error.message
     })
@@ -60,8 +58,7 @@ router.get('/:sellerId', async (req, res) => {
   try {
     const { sellerId } = req.params
     const data = await handler.getSellerByIdHandler(sellerId)
-    res.status(200)
-    res.send(
+    res.status(200).json(
       { 
         status: 'success',
         message: 'Success get seller',
@@ -69,7 +66,7 @@ router.get('/:sellerId', async (req, res) => {
       }
     )
   } catch (error) {
-    res.status(error.statusCode || 500).send({
+    res.status(error.statusCode || 500).json({
       status: 'Fail',
       message: error.message
     })
@@ -84,15 +81,14 @@ router.put('/:sellerId', upload.single('cover'), async (req, res) => {
     if (req.file) req.body.cover = req.file
 
     await handler.putSellerByIdHandler(sellerId, req.body)
-    res.status(200)
-    res.send(
+    res.status(200).json(
       { 
         status: 'success',
         message: 'Success update seller'
       }
     )
   } catch (error) {
-    res.status(error.statusCode || 500).send({
+    res.status(error.statusCode || 500).json({
       status: 'Fail',
       message: error.message
     })

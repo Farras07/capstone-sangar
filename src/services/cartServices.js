@@ -56,6 +56,7 @@ class CartServices {
       console.log('halooo')
       querySnapshot.forEach((data) => { 
         const { products } = data.data()
+        console.log(products)
         productsData = products
       })
 
@@ -119,6 +120,42 @@ class CartServices {
         products: productsData
       }) 
       return { message: 'Cart quantity updated successfully' }
+    } catch (error) {
+      console.error('Error updating cart quantity:', error)
+      throw error
+    }
+  }
+
+  async deleteProductCart(userId, productId) {
+    try {
+      const querySnapshot = await db.collection('carts').where('userId', '==', userId).get()
+
+      if (querySnapshot.empty) {
+        throw new NotFoundError('Cart not found')
+      }
+
+      let productsData = null
+      querySnapshot.forEach((data) => { 
+        const { products } = data.data()
+        productsData = products
+      })
+      console.log(productsData)
+      const existingProductIndex = productsData.findIndex((product) => product.productId === productId)
+
+      console.log(existingProductIndex)
+
+      if (existingProductIndex !== -1) {
+        productsData.splice(existingProductIndex, 1)
+      } else {
+        throw new NotFoundError('Product not found In Cart')
+      }
+
+      const docRef = querySnapshot.docs[0].ref
+
+      await docRef.update({
+        products: productsData
+      }) 
+      return productId
     } catch (error) {
       console.error('Error updating cart quantity:', error)
       throw error

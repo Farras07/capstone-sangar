@@ -73,10 +73,10 @@ class CartHandler {
     }
   }
 
-  async deleteCartHandler(cartId) {
+  async deleteProductCartHandler(userId, productId) {
     try {
       // Implementation to delete a cart
-      return await this._service.deleteCart(cartId)
+      return await this._service.deleteProductCart(userId, productId)
     } catch (error) {
       throw new Error(`Failed to delete cart: ${error.message}`)
     }

@@ -15,8 +15,7 @@ router.get('/', async (req, res) => {
     const { uid: userId } = decodedToken
 
     const data = await handler.getTransactionsByUserIdHandler(userId)
-    res.status(200)
-    res.send(
+    res.status(200).json(
       {
         status: 'success',
         data: {
@@ -40,8 +39,7 @@ router.get('/:id', async (req, res) => {
     const { uid: userId } = decodedToken
     
     const data = await handler.getTransactionByIdHandler(userId, transactionId)
-    res.status(200)
-    res.send(
+    res.status(200).json(
       {
         status: 'success',
         data: {
@@ -50,7 +48,7 @@ router.get('/:id', async (req, res) => {
       }
     )
   } catch (error) {
-    res.status(error.statusCode || 500).send({
+    res.status(error.statusCode || 500).json({
       status: 'Fail',
       message: error.message
     })
@@ -66,8 +64,7 @@ router.put('/:id', async (req, res) => {
     const { uid: userId } = decodedToken
 
     await handler.putTransactionByIdHandler(userId, transactionId, payload)
-    res.status(200)
-    res.send(
+    res.status(200).json(
       {
         status: 'success',
         message: 'Update Transaction Success'
@@ -87,8 +84,7 @@ router.post('/', async (req, res) => {
     const decodedToken = await AuthorizationServices(token)
     const { uid: userId } = decodedToken
     const data = await handler.postTransactionHandler(userId)
-    res.status(201)
-    res.send(
+    res.status(201).json(
       {
         status: 'success',
         message: 'Order Success',
@@ -98,7 +94,7 @@ router.post('/', async (req, res) => {
       }
     )
   } catch (error) {
-    res.status(error.statusCode || 500).send({
+    res.status(error.statusCode || 500).json({
       status: 'Fail',
       message: error.message
     })
