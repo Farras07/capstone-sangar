@@ -26,7 +26,14 @@ router.get('/', async (req, res) => {
     const { uid: userId } = decodedToken
 
     const carts = await handler.getCartHandler(userId)
-    res.status(200).json(carts)
+    res.status(200)
+    res.send(
+      { 
+        status: 'success',
+        message: 'Success get cart',
+        data: carts
+      }
+    )
   } catch (error) {
     res.status(500).json({
       status: 'Fail',
