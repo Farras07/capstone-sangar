@@ -135,6 +135,27 @@ router.get('/:sellerId/flowers/:id', async (req, res) => {
   }
 })
 
+router.get('/transaction/list', async (req, res) => {
+  try {
+    const token = req.headers.authorization
+    const decodedToken = await AuthorizationServices(token)
+    const { uid: ownerId } = decodedToken
+    const transactionData = await handler.getSellerTransactionHandler(ownerId)
+    res.status(200).json(
+      { 
+        status: 'success',
+        message: 'Success get seller',
+        data: transactionData
+      }
+    )
+  } catch (error) {
+    res.status(error.statusCode || 500).send({
+      status: 'Fail',
+      message: error.message
+    })
+  }
+})
+
 router.post('/flowers', upload.single('cover'), async (req, res) => {
   try {
     const token = req.headers.authorization

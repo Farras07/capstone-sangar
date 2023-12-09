@@ -33,6 +33,10 @@ class UserHandler {
       })
       payload.cover = imageUrl
     }
+    if (payload.locationLatitude !== undefined && payload.locationLongitude !== undefined) {
+      payload.locationLatitude = Number(payload.locationLatitude)
+      payload.locationLongitude = Number(payload.locationLongitude)
+    }
     const { locationLatitude, locationLongitude, password, ...newObject } = payload 
     const user = {
       ...newObject,

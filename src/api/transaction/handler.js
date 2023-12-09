@@ -12,6 +12,7 @@ class TransactionHandler {
     // await this._validator.validatePostTransactionPayload(payload)
     const cartData = await this._cartService.getCart(userId)
     const { total, products } = cartData
+    console.log(cartData)
     const id = `TRK-${nanoid(16)}`
     const dateOptions = {
       year: 'numeric',

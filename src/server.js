@@ -15,6 +15,7 @@ const seller = require('./api/seller')
 const transaction = require('./api/transaction')
 const cart = require('./api/cart')
 const wishlist = require('./api/wishlist')
+const catalog = require('./api/catalog')
 
 dotenv.config({ path: '.env.development' })
 const host = process.env.HOST
@@ -42,6 +43,7 @@ app.use('/user', users)
 app.use('/transaction', transaction)
 app.use('/cart', cart)
 app.use('/wishlist', wishlist)
+app.use('/catalog', catalog)
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })

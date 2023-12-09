@@ -3,9 +3,12 @@ const gc = require('../config/storageConfig')
 const bucket = gc.bucket('flowers-capstone') // should be your bucket name
 const NotFoundError = require('../exceptions/NotFoundError')
 const ClientError = require('../exceptions/ClientError')
+const SellerServices = require('../services/sellerServices')
+const sellerServices = new SellerServices()
 
 class FlowerServices {
   constructor () {
+    this._sellerServices = sellerServices
     this._db = db
   }
 
@@ -19,8 +22,11 @@ class FlowerServices {
         const { caseSearch, ...restFlowerData } = flowerData
         flowersData.push(restFlowerData)
       })
-      console.log(flowersData)
-  
+      
+      if (flowersData.length === 0) {
+        throw new NotFoundError('Flowers not found')
+      }
+
       return flowersData
     } catch (error) {
       console.error('Error getting flowers:', error)
@@ -38,6 +44,7 @@ class FlowerServices {
         const { caseSearch, ...restFlowerData } = flowerData
         flowerDatas = restFlowerData
       })
+
       if (!flowerDatas) {
         throw new NotFoundError('Flower not found')
       }
@@ -72,7 +79,7 @@ class FlowerServices {
         flowerData = data.data()
       })
       
-      if (flowerData === null) {
+      if (!flowerData) {
         throw new NotFoundError('Flower not found')
       }
   
@@ -85,7 +92,6 @@ class FlowerServices {
 
   async getSellerFlowerByName(flowerName, sellerId) {
     try {
-      console.log(seller)
       const flowerQuery = await db.collection('products').doc(sellerId).collection('flowers').where('caseSearch', 'array-contains', flowerName.toLowerCase()).get()
       const flowerData = []
       flowerQuery.forEach((doc) => {
@@ -93,6 +99,12 @@ class FlowerServices {
         const { caseSearch, ...flowerWithoutCaseSearch } = flower
         flowerData.push(flowerWithoutCaseSearch)
       })
+
+      if (flowerData.length === 0) {
+        const flowerDataByLocalName = await this.getFlowersByLocalName(flowerName)
+        return flowerDataByLocalName
+      }
+      
       return flowerData
     } catch (error) {
       console.error('Error getting flowers:', error)
@@ -102,17 +114,59 @@ class FlowerServices {
 
   async getFlowersByName(flowerName) {
     try {
-      // const docSnap = await db.collection('products').doc('sellerId').collection('flowers').where('flowerName', '==', flowerName).get()
       const flowerQuery = await db.collectionGroup('flowers').where('caseSearch', 'array-contains', flowerName.toLowerCase()).get()
       const flowerData = []
+  
       flowerQuery.forEach((doc) => {
         const flower = doc.data()
         const { caseSearch, ...flowerWithoutCaseSearch } = flower
         flowerData.push(flowerWithoutCaseSearch)
       })
-      return flowerData
+  
+      const fixedFlowersData = await Promise.all(flowerData.map(async (flower) => {
+        const { sellerId, caseSearch, ...restFlowerData } = flower
+        const sellerData = await this._sellerServices.getSellerById(sellerId)
+        console.log(sellerData)
+        return { ...restFlowerData, seller: sellerData }
+      }))
+  
+      if (fixedFlowersData.length === 0) {
+        const formattedFlowerName = flowerName.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
+        console.log(formattedFlowerName)
+        const flowerDataByLocalName = await this.getFlowersByLocalName(formattedFlowerName)
+        return flowerDataByLocalName
+      }
+  
+      return fixedFlowersData
     } catch (error) {
       console.error('Error getting flowers:', error)
+      throw error
+    }
+  }
+
+  async getFlowersByLocalName(flowerName) {
+    try {
+    //   const querySnapshot = await this._db.collection('katalog').orderBy('localName').startAt(flowerName).endAt(flowerName).get()
+      const querySnapshot = await this._db.collectionGroup('flowers').where('localName', '>=', flowerName).where('localName', '<=', flowerName + '\uf8ff').get()
+      const flowerData = []
+      querySnapshot.forEach((doc) => {
+        const cartData = doc.data()
+        flowerData.push(cartData) 
+      })
+
+      const fixedFlowersData = await Promise.all(flowerData.map(async (flower) => {
+        const { sellerId, caseSearch, ...restFlowerData } = flower
+        const sellerData = await this._sellerServices.getSellerById(sellerId)
+        console.log(sellerData)
+        return { ...restFlowerData, seller: sellerData }
+      }))
+  
+      if (fixedFlowersData.length === 0) {
+        throw new NotFoundError('Flower not found')
+      }
+        
+      return fixedFlowersData 
+    } catch (error) {
       throw error
     }
   }
@@ -188,6 +242,11 @@ class FlowerServices {
 
   async updateFlower (data, flowerId, sellerId, flowerName) {
     try {
+      const isFlowerExist = await this.verifyFlowerExistById(flowerId, sellerId)
+      if (!isFlowerExist) {
+        throw new NotFoundError('Flower not found')
+      }
+
       if (data.cover !== undefined) {
         const query = db.collection('products').doc(sellerId).collection('flowers').where('id', '==', flowerId)
         const snapshot = await query.get()

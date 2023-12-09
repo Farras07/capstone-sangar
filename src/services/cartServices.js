@@ -22,7 +22,7 @@ class CartServices {
         cartsData = cartData
       })
 
-      if (cartsData.length === 0) {
+      if (!cartsData) {
         throw new NotFoundError('Cart not found')
       }
       

@@ -39,7 +39,7 @@ class CartHandler {
       this._validator.validatePostCartPayload(payload)
       console.log('lahh')
       const flowerData = await this._flowerServices.getFlowerById(productId)
-      const { cover, price, flowerName } = flowerData
+      const { cover, price, flowerName, sellerId } = flowerData
 
       const total = price * payload.quantity
       console.log('jajaj')
@@ -50,6 +50,7 @@ class CartHandler {
         ...payload,
         productId,
         price,
+        sellerId,
         flowerName,
         subtotal: total
       }

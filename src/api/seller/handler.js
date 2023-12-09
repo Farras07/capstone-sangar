@@ -1,7 +1,6 @@
 const { nanoid } = require('nanoid')
 const FlowerService = require('../../services/flowerServices')
 const flowerValidator = require('../../validator/flowers')
-const InvariantError = require('../../exceptions/InvariantError')
 
 class SellerHandler {
   constructor (validator, services) {
@@ -18,6 +17,12 @@ class SellerHandler {
     const sellerId = `seller-${nanoid(16)}`
 
     if (image !== undefined) payload.cover = image
+
+    if (payload.locationLatitude !== undefined && payload.locationLongitude !== undefined) {
+      payload.locationLatitude = Number(payload.locationLatitude)
+      payload.locationLongitude = Number(payload.locationLongitude)
+    }
+
     let { locationLatitude: latitude, locationLongitude: longitude, ...newObject } = payload
 
     if (latitude !== undefined && longitude !== undefined) {
@@ -75,6 +80,13 @@ class SellerHandler {
   async getSellerFlowerByIdHandler (flowerId, sellerId) {
     const flowersData = await this._flowerService.getSellerFlowerById(flowerId, sellerId)
     return flowersData
+  }
+
+  async getSellerTransactionHandler (ownerId) {
+    const sellerData = await this._sellerServices.getSellerByOwnerId(ownerId)
+    const { sellerId } = sellerData
+    const transactionData = await this._sellerServices.getTransactionsSeller(sellerId)
+    return transactionData
   }
 
   async addSellerFlowerHandler (payload, ownerId) {

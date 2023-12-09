@@ -3,6 +3,8 @@ const gc = require('../config/storageConfig')
 const bucket = gc.bucket('seller-flowercapstone') // should be your bucket name
 const NotFoundError = require('../exceptions/NotFoundError')
 const ClientError = require('../exceptions/ClientError')
+const UserServices = require('../services/userServices')
+const userServices = new UserServices()
 
 class SellerServices {
   constructor () {
@@ -96,6 +98,57 @@ class SellerServices {
       return sellerData
     } catch (error) {
       console.log(error)
+      throw error
+    }
+  }
+
+  async getTransactionsSeller(sellerId) {
+    try {
+      const querySnapshot = await db.collection('transactions').get()
+      const transactionData = []
+  
+      querySnapshot.forEach((doc) => {
+        const transactionSeller = doc.data()
+        transactionData.push(transactionSeller)
+      })
+  
+      const filteredProductTransactionData = await Promise.all(transactionData.map(async (transaction) => {
+        const filteredProducts = transaction.products.filter(product => product.sellerId === sellerId)
+  
+        if (filteredProducts.length > 0) {
+          const userData = await userServices.getUserById(transaction.userId)
+  
+          return {
+            ...transaction,
+            products: filteredProducts,
+            buyer: {
+              name: userData.name,
+              contact: userData.contact,
+              address: userData.address,
+              location_coordinate: {
+                latitude: userData.location_coordinate.latitude,
+                longitude: userData.location_coordinate.longitude
+              }
+            }
+          }
+        }
+  
+        return null // Return null for transactions with no matching products
+      }))
+      
+      const finalFilteredTransactionData = filteredProductTransactionData.filter(Boolean)
+      const ReallyFinalFilteredTransactionData = finalFilteredTransactionData.map((transaction) => {
+        const total = transaction.products.reduce((acc, curr) => {
+          return acc + curr.subtotal
+        }, 0)
+        return { ...transaction, total }
+      })
+      if (ReallyFinalFilteredTransactionData.length === 0) {
+        throw new NotFoundError('Transaction not found')
+      }
+  
+      return ReallyFinalFilteredTransactionData
+    } catch (error) {
       throw error
     }
   }
