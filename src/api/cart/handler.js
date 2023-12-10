@@ -1,10 +1,13 @@
 const FlowerServices = require('../../services/flowerServices')
+const SellerServices = require('../../services/sellerServices')
 const flowerServices = new FlowerServices()
+const sellerServices = new SellerServices()
 class CartHandler {
   constructor(services, validator) {
     this._service = services
     this._validator = validator
     this._flowerServices = flowerServices
+    this._sellerServices = sellerServices
   }
 
   // async getCartsHandler() {
@@ -20,7 +23,7 @@ class CartHandler {
     try {
       return await this._service.getCart(userId)
     } catch (error) {
-      throw new Error(`Failed to get carts: ${error.message}`)
+      throw error
     }
   }
 
@@ -29,7 +32,7 @@ class CartHandler {
       // Implementation to retrieve and return a specific cart by ID
       return await this._service.getCart(cartId)
     } catch (error) {
-      throw new Error(`Failed to get cart by ID: ${error.message}`)
+      throw error
     }
   }
 
@@ -37,10 +40,10 @@ class CartHandler {
     try {
       // Validate the payload using the validator
       this._validator.validatePostCartPayload(payload)
-      console.log('lahh')
       const flowerData = await this._flowerServices.getFlowerById(productId)
       const { cover, price, flowerName, sellerId } = flowerData
-
+      const sellerData = await this._sellerServices.getSellerById(sellerId)
+      
       const total = price * payload.quantity
       console.log('jajaj')
       if (cover) {
@@ -50,7 +53,7 @@ class CartHandler {
         ...payload,
         productId,
         price,
-        sellerId,
+        seller: sellerData,
         flowerName,
         subtotal: total
       }
@@ -58,7 +61,7 @@ class CartHandler {
       // Implementation to add a new cart
       return await this._service.addProductToCart(userId, payload)
     } catch (error) {
-      throw new Error(`Failed to add cart: ${error.message}`)
+      throw error
     }
   }
 
@@ -70,7 +73,7 @@ class CartHandler {
       // Implementation to update an existing cart
       return await this._service.updateProductInCart(userId, payload, productId)
     } catch (error) {
-      throw new Error(`Failed to update cart: ${error.message}`)
+      throw error
     }
   }
 
@@ -79,7 +82,7 @@ class CartHandler {
       // Implementation to delete a cart
       return await this._service.deleteProductCart(userId, productId)
     } catch (error) {
-      throw new Error(`Failed to delete cart: ${error.message}`)
+      throw error
     }
   }
 }

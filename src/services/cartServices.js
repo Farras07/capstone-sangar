@@ -99,7 +99,6 @@ class CartServices {
 
       if (existingProductIndex !== -1) {
         productsData[existingProductIndex].quantity = (payload.quantity !== undefined ? payload.quantity : productsData[existingProductIndex].quantity) 
-        productsData[existingProductIndex].varian = (payload.varian !== undefined ? payload.varian : productsData[existingProductIndex].varian)
         productsData[existingProductIndex].subtotal = productsData[existingProductIndex].quantity * productsData[existingProductIndex].price
       } else {
         throw new NotFoundError('Product not found In Cart')

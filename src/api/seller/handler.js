@@ -1,7 +1,6 @@
 const { nanoid } = require('nanoid')
 const FlowerService = require('../../services/flowerServices')
 const flowerValidator = require('../../validator/flowers')
-
 class SellerHandler {
   constructor (validator, services) {
     // this._service = service
@@ -14,6 +13,7 @@ class SellerHandler {
   async postSellerHandler (credentialId, payload) {
     const image = payload.cover !== undefined ? payload.cover : undefined
     await this._validator.validatePostSellerPayload(payload)
+    await this._sellerServices.verifyUserIsSeller(credentialId)
     const sellerId = `seller-${nanoid(16)}`
 
     if (image !== undefined) payload.cover = image

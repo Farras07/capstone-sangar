@@ -4,6 +4,7 @@ const bucket = gc.bucket('seller-flowercapstone') // should be your bucket name
 const NotFoundError = require('../exceptions/NotFoundError')
 const ClientError = require('../exceptions/ClientError')
 const UserServices = require('../services/userServices')
+const InvariantError = require('../exceptions/InvariantError')
 const userServices = new UserServices()
 
 class SellerServices {
@@ -106,14 +107,13 @@ class SellerServices {
     try {
       const querySnapshot = await db.collection('transactions').get()
       const transactionData = []
-  
       querySnapshot.forEach((doc) => {
         const transactionSeller = doc.data()
         transactionData.push(transactionSeller)
       })
-  
+      console.log(sellerId)
       const filteredProductTransactionData = await Promise.all(transactionData.map(async (transaction) => {
-        const filteredProducts = transaction.products.filter(product => product.sellerId === sellerId)
+        const filteredProducts = transaction.products.filter(product => product.seller.sellerId === sellerId)
   
         if (filteredProducts.length > 0) {
           const userData = await userServices.getUserById(transaction.userId)
@@ -180,6 +180,16 @@ class SellerServices {
       return true
     } else {
       return false
+    }
+  }
+
+  async verifyUserIsSeller(userId) {
+    const sellerData = await db.collection('seller').where('ownerId', '==', userId).get()
+
+    if (!sellerData.empty) {
+      throw new InvariantError('User is already a seller')
+    } else {
+      return true
     }
   }
 }

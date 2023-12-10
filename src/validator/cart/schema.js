@@ -2,8 +2,7 @@ const Joi = require('joi')
 
 const postCartPayloadSchema = Joi.object({
   productId: Joi.string().required(),
-  quantity: Joi.number().required(),
-  varian: Joi.string()
+  quantity: Joi.number().required()
 })
 
 const getCartPayloadSchema = Joi.object({
@@ -11,8 +10,7 @@ const getCartPayloadSchema = Joi.object({
 })
 
 const putCartPayloadSchema = Joi.object({
-  quantity: Joi.number(),
-  varian: Joi.string()
+  quantity: Joi.number()
 })
 
 module.exports = {

@@ -1,3 +1,4 @@
+const NotFoundError = require('../../exceptions/NotFoundError')
 const FlowerServices = require('../../services/flowerServices')
 const flowerServices = new FlowerServices()
 class WishlistHandler {
@@ -11,7 +12,7 @@ class WishlistHandler {
     try {
       return await this._service.getWishlists(userId)
     } catch (error) {
-      throw new Error(`Failed to get carts: ${error.message}`)
+      throw error
     }
   }
 
@@ -19,7 +20,7 @@ class WishlistHandler {
     try {
       return await this._service.getCart(cartId)
     } catch (error) {
-      throw new Error(`Failed to get cart by ID: ${error.message}`)
+      throw error
     }
   }
 
@@ -33,7 +34,7 @@ class WishlistHandler {
 
       return await this._service.addProductToCart(userId, wishlistData)
     } catch (error) {
-      throw new Error(`Failed to add cart: ${error.message}`)
+      throw error
     }
   }
 
@@ -42,7 +43,7 @@ class WishlistHandler {
       // Implementation to delete a cart
       return await this._service.deleteWishlistProduct(userId, productId)
     } catch (error) {
-      throw new Error(`Failed to delete cart: ${error.message}`)
+      throw error
     }
   }
 }

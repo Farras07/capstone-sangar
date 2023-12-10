@@ -98,7 +98,6 @@ class WishlistServices {
       }) 
       return productId
     } catch (error) {
-      console.error('Error deleting product from wishlist:', error)
       throw error
     }
   }
