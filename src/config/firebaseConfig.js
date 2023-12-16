@@ -1,12 +1,15 @@
 const { initializeApp } = require('firebase/app')
 
+const dotenv = require('dotenv')
+dotenv.config({ path: '.env.development' })
+
 const firebaseConfig = {
-  apiKey: 'AIzaSyCoLYN4MbStCeFEdj8xEtPhUXN-w2bmz8w',
-  authDomain: 'coral-sum-402511.firebaseapp.com',
-  projectId: 'coral-sum-402511',
-  storageBucket: 'coral-sum-402511.appspot.com',
-  messagingSenderId: '95836983208',
-  appId: '1:95836983208:web:994277a200e766a2de579d'
+  apiKey: process.env.API_KEY,
+  authDomain: process.env.AUTH_DOMAIN,
+  projectId: process.env.PROJECT_ID,
+  storageBucket: process.env.STORAGE_BUCKET,
+  messagingSenderId: process.env.MESSAGING_SENDER_ID,
+  appId: process.env.APP_ID
 }
   
 const app = initializeApp(firebaseConfig)

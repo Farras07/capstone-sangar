@@ -13,7 +13,6 @@ router.get('/flower', async (req, res) => {
       data = await handler.getCatalogHandler()
     } else {
       const formattedFlowerName = flowerName.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
-      console.log(formattedFlowerName)
       data = await handler.getCatalogFlowerByNameHandler(formattedFlowerName)
     }
     res.status(200).json(

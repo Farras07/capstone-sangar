@@ -1,14 +1,21 @@
+/* eslint-disable camelcase */
 const db = require('../config/dbConfig')
 const gc = require('../config/storageConfig')
-const bucket = gc.bucket('flowers-capstone') // should be your bucket name
+const bucket = gc.bucket('flowers-capstone')
+const predictBucket = gc.bucket('predict-capstone')
 const NotFoundError = require('../exceptions/NotFoundError')
 const ClientError = require('../exceptions/ClientError')
 const SellerServices = require('../services/sellerServices')
 const sellerServices = new SellerServices()
-
+const axios = require('axios')
+const FormData = require('form-data')
+const { Readable } = require('stream')
+const CatalogServices = require('./catalogServices.js')
+const catalogServices = new CatalogServices()
 class FlowerServices {
   constructor () {
     this._sellerServices = sellerServices
+    this._catalogServices = catalogServices
     this._db = db
   }
 
@@ -29,7 +36,6 @@ class FlowerServices {
 
       return flowersData
     } catch (error) {
-      console.error('Error getting flowers:', error)
       throw error
     }
   }
@@ -51,7 +57,6 @@ class FlowerServices {
   
       return flowerDatas
     } catch (error) {
-      console.error('Error getting flower:', error)
       throw error
     }
   }
@@ -85,7 +90,6 @@ class FlowerServices {
   
       return flowerData
     } catch (error) {
-      console.error(error)
       throw error
     }
   }
@@ -107,7 +111,6 @@ class FlowerServices {
       
       return flowerData
     } catch (error) {
-      console.error('Error getting flowers:', error)
       throw error
     }
   }
@@ -126,20 +129,17 @@ class FlowerServices {
       const fixedFlowersData = await Promise.all(flowerData.map(async (flower) => {
         const { sellerId, caseSearch, ...restFlowerData } = flower
         const sellerData = await this._sellerServices.getSellerById(sellerId)
-        console.log(sellerData)
         return { ...restFlowerData, seller: sellerData }
       }))
   
       if (fixedFlowersData.length === 0) {
         const formattedFlowerName = flowerName.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase())
-        console.log(formattedFlowerName)
         const flowerDataByLocalName = await this.getFlowersByLocalName(formattedFlowerName)
         return flowerDataByLocalName
       }
   
       return fixedFlowersData
     } catch (error) {
-      console.error('Error getting flowers:', error)
       throw error
     }
   }
@@ -157,7 +157,6 @@ class FlowerServices {
       const fixedFlowersData = await Promise.all(flowerData.map(async (flower) => {
         const { sellerId, caseSearch, ...restFlowerData } = flower
         const sellerData = await this._sellerServices.getSellerById(sellerId)
-        console.log(sellerData)
         return { ...restFlowerData, seller: sellerData }
       }))
   
@@ -170,43 +169,10 @@ class FlowerServices {
       throw error
     }
   }
-  // async getFlowersByName(flowerName) {
-  //   try {
-  //     // const docSnap = await db.collection('products').doc('sellerId').collection('flowers').where('flowerName', '==', flowerName).get()
-  //     const querySnapshot = await db.collection('products').get()
-  //     const promises = []
-  //     querySnapshot.forEach((doc) => {
-  //       const sellerId = doc.id
-  //       if (sellerId) {
-  //         // const flowerQuery = db.collection('products').doc(sellerId).collection('flowers').where('flowerName', '>=', flowerName.toUpperCase()).where('flowerName', '<=', flowerName + '\uf8ff').orderBy('flowerName').limit(10).get()
-  //         const flowerQuery = db.collection('products').doc(sellerId).collection('flowers').where('caseSearch', 'array-contains', flowerName.toLowerCase()).get()
-  //         promises.push(flowerQuery)
-  //       }
-  //     })
-
-  //     const snapshotArrays = await Promise.all(promises)
-  //     const flowerData = []
-  //     snapshotArrays.forEach(snapArray => {
-  //       snapArray.forEach((snap) => {
-  //         const flower = snap.data()
-  //         const { caseSearch, ...flowerWithoutCaseSearch } = flower
-  //         flowerData.push(flowerWithoutCaseSearch)
-  //       })
-  //       if (flowerData.length === 0) {
-  //         throw new NotFoundError('Flower not found')
-  //       }
-  //     })
-  //     return flowerData 
-  //   } catch (error) {
-  //     console.error('Error getting flowers:', error)
-  //     throw error
-  //   }
-  // }
 
   async addFlower (data) {
     try {
       const { cover, ...newData } = data
-      console.log(data)
       const { id, flowerName, sellerId } = data
       const searchParams = await this.setSeacrhParams(flowerName)
       const isFlowerExist = await this.verifyFlowersExistByName(flowerName, sellerId)
@@ -218,24 +184,19 @@ class FlowerServices {
         const filename = `${id}_${data.cover.originalname}`
         const file = await this.uploadFlowerImage(filename, data.cover.buffer)
 
-        console.log('file')
-        console.log(file)
         if (file) {
           const imageUrl = `${process.env.GS_URL}/${file}`
           newData.cover = imageUrl
         } else {
-          console.error('Failed to upload flower image')
           return null
         }
       }
-      console.log('haloo')
       const doc = db.collection('products').doc(sellerId).collection('flowers').doc(flowerName)
       // await doc.set(newData)
       await doc.set({ ...newData, caseSearch: searchParams })
       // await doc.set(data)
       return id
     } catch (error) {
-      console.error(error)
       throw error
     }
   }
@@ -250,7 +211,6 @@ class FlowerServices {
       if (data.cover !== undefined) {
         const query = db.collection('products').doc(sellerId).collection('flowers').where('id', '==', flowerId)
         const snapshot = await query.get()
-        console.log('before')
         await this.deleteFlowerImage(snapshot)
 
         const { cover: { originalname, buffer } } = data
@@ -259,7 +219,6 @@ class FlowerServices {
         const imageUrl = `${process.env.GS_URL}/${file}`
         data.cover = imageUrl
       }
-      console.log('ddd')
       const doc = db.collection('products').doc(sellerId).collection('flowers').doc(flowerName)
       await doc.update(data)
     } catch (error) {
@@ -286,7 +245,6 @@ class FlowerServices {
         })
       }
     } catch (error) {
-      console.log('INTERNAL SERVER ERROR')
       throw error
     }
   }
@@ -305,15 +263,11 @@ class FlowerServices {
     try {
       const filename = await Promise.all(data.docs.map(async (doc) => {
         const flowerData = doc.data()
-        console.log('haloo')
         const coverFile = flowerData.cover ? flowerData.cover.split('/').pop() : undefined
-        console.log(coverFile)
         return coverFile
       }))
 
-      console.log('filename')
       if (filename[0] !== undefined) {
-        console.log('hehehe')
         const file = bucket.file(filename)
     
         // Check if the file exists
@@ -322,13 +276,11 @@ class FlowerServices {
         if (exists[0]) {
           // File exists, so delete it
           await file.delete()
-          console.log(`File ${filename} deleted successfully`)
         } else {
           throw new NotFoundError('Image File Not Found')
         }
       }
     } catch (error) {
-      console.log(error)
       throw error
     }
   }
@@ -336,16 +288,14 @@ class FlowerServices {
   async createGSDirectory(directoryPath) {
     try {
       await bucket.file(directoryPath).create({ ifNotExist: true })
-      console.log(`Directory '${directoryPath}' created.`)
     } catch (error) {
-      console.error('Error creating directory:', error)
+      throw error
     }
   }
 
   async verifyFlowersExistByName(flowerName, sellerId) {
     const flowerData = await db.collection('products').doc(sellerId).collection('flowers').where('flowerName', '==', flowerName).get()
     if (!flowerData.empty) {
-      console.log('No matching documents.')
       return true
     } else {
       return false
@@ -357,7 +307,6 @@ class FlowerServices {
     if (!flowerData.empty) {
       return true
     } else {
-      console.log('No matching documents.')
       return false
     }
   }
@@ -370,6 +319,62 @@ class FlowerServices {
       caseSearchList.push(temp.toLowerCase())
     }
     return caseSearchList
+  }
+
+  async predictFlower(imagePredict) {
+    try {
+      const { originalname, buffer } = imagePredict
+      const file = predictBucket.file(originalname)
+      await file.save(buffer)
+
+      const filePredict = predictBucket.file(file.name)
+      const signedUrl = await filePredict.getSignedUrl({
+        action: 'read',
+        expires: Date.now() + 15 * 60 * 1000 // 15 minutes
+      })
+  
+      const response = await axios.get(signedUrl[0], {
+        responseType: 'arraybuffer' // Ensure the response is treated as binary data
+      })
+  
+      const formData = new FormData()
+      
+      // Convert the ArrayBuffer to a Node.js Readable Stream
+      const stream = new Readable()
+      stream.push(Buffer.from(response.data))
+      stream.push(null)
+  
+      formData.append('image', stream, { filename: file.name })
+    
+      // Make the HTTP request using axios and the FormData object
+      const predictionResponse = await axios.post('https://ml-predict-casptone-m7kn4aeh5a-as.a.run.app/prediction', formData, {
+        headers: {
+          ...formData.getHeaders()
+        },
+        responseType: 'json'
+      })
+
+      const { flower_name_prediction } = predictionResponse.data.data
+      const formattedFlowerName = flower_name_prediction.replace(/_/g, ' ')
+
+      let productsData
+      let flowerCatalogData
+      
+      try {
+        flowerCatalogData = await this._catalogServices.getCatalogByName(formattedFlowerName) 
+        productsData = await this.getFlowersByName(formattedFlowerName)
+      } catch (error) {
+        console.log(error)
+      }
+
+      return {
+        predictResult: formattedFlowerName,
+        flowerData: flowerCatalogData ? flowerCatalogData[0] : {},
+        productsData: productsData || []
+      }
+    } catch (error) {
+      throw error
+    }
   }
 }
 module.exports = FlowerServices

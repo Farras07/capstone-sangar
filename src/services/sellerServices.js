@@ -26,15 +26,12 @@ class SellerServices {
         if (file) {
           const imageUrl = `${process.env.GS_URL_SELLER}/${file}`
           data.cover = imageUrl
-        } else {
-          console.error('Failed to upload flower image')
         }
       }
       const doc = db.collection('seller').doc(namaToko)
       await doc.set(data)
       return sellerId
     } catch (error) {
-      console.error(error)
       throw error
     }
   }
@@ -57,7 +54,6 @@ class SellerServices {
       const docRef = querySnapshot.docs[0].ref
       await docRef.update(data)
     } catch (error) {
-      console.error(error)
       throw error
     }
   }
@@ -73,18 +69,15 @@ class SellerServices {
       if (!sellerData) {
         throw new NotFoundError('Seller not found')
       }
-      console.log(sellerData) 
     
       return sellerData
     } catch (error) {
-      console.log(error)
       throw error
     }
   }
 
   async getSellerByOwnerId(ownerId) {
     try {
-      console.log(ownerId)
       const querySnapshot = await db.collection('seller').where('ownerId', '==', ownerId).get()
     
       let sellerData = null
@@ -94,11 +87,9 @@ class SellerServices {
       if (!sellerData) {
         throw new NotFoundError('Seller not found')
       }
-      console.log(sellerData) 
     
       return sellerData
     } catch (error) {
-      console.log(error)
       throw error
     }
   }
@@ -111,7 +102,6 @@ class SellerServices {
         const transactionSeller = doc.data()
         transactionData.push(transactionSeller)
       })
-      console.log(sellerId)
       const filteredProductTransactionData = await Promise.all(transactionData.map(async (transaction) => {
         const filteredProducts = transaction.products.filter(product => product.seller.sellerId === sellerId)
   
@@ -159,7 +149,6 @@ class SellerServices {
       await file.save(buffer)
       return file.name
     } catch (error) {
-      console.log(error)
       throw error
     }
   }

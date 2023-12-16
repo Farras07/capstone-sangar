@@ -6,12 +6,10 @@ class TransactionServices {
   }
 
   async addTransaction(payload) {
-    console.log(payload)
     try {
       await this._db.collection('transactions').doc(payload.id).set(payload)
       return payload.id
     } catch (error) {
-      console.log(error)
       throw error
     }
   }
@@ -26,11 +24,9 @@ class TransactionServices {
       if (!transactionData) {
         throw new NotFoundError('Transaction not found')
       }
-      console.log(transactionData)
   
       return transactionData
     } catch (error) {
-      console.log(error)
       throw error
     }
   }
@@ -46,24 +42,20 @@ class TransactionServices {
       if (!transactionData) {
         throw new NotFoundError('Transaction not found')
       }
-      console.log(transactionData)
   
       return transactionData
     } catch (error) {
-      console.log(error)
       throw error
     }
   }
 
   async updateTransaction(userId, transactionId, payload) {
     try {
-      console.log(payload)
       const querySnapshot = await db.collection('transactions').where('userId', '==', userId).where('id', '==', transactionId).get()
       querySnapshot.forEach((doc) => {
         doc.ref.update(payload)
       })
     } catch (error) {
-      console.log(error)
       throw error
     }
   }

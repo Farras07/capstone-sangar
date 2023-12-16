@@ -21,10 +21,8 @@ class WishlistServices {
         throw new NotFoundError('Wislist not found')
       }
       
-      console.log(wishlistData)
       return wishlistData
     } catch (error) {
-      console.error('Error getting wishlists:', error)
       throw error
     }
   }
@@ -34,7 +32,6 @@ class WishlistServices {
       const doc = db.collection('wishlist').doc(data.id)
       await doc.set(data)
     } catch (error) {
-      console.error(error)
       throw error
     }
   }
@@ -56,13 +53,11 @@ class WishlistServices {
       productsData.push(payload)
       const docRef = querySnapshot.docs[0].ref
 
-      console.log(payload)
       await docRef.update({
         products: productsData
       })
       return payload.id
     } catch (error) {
-      console.error(error)
       throw error
     }
   }
@@ -80,10 +75,7 @@ class WishlistServices {
         const { products } = data.data()
         productsData = products
       })
-      console.log(productsData)
       const existingProductIndex = productsData.findIndex((product) => product.id === productId)
-
-      console.log(existingProductIndex)
 
       if (existingProductIndex !== -1) {
         productsData.splice(existingProductIndex, 1)
@@ -102,52 +94,5 @@ class WishlistServices {
     }
   }
 }
-//   async updateProductInCart(userId, payload, productId) {
-//     try {
-//       const querySnapshot = await db.collection('carts').where('userId', '==', userId).get()
-
-//       if (querySnapshot.empty) {
-//         throw new NotFoundError('Cart not found')
-//       }
-
-//       let productsData = null
-//       querySnapshot.forEach((data) => { 
-//         const { products } = data.data()
-//         productsData = products
-//       })
-
-//       const existingProductIndex = productsData.findIndex((product) => product.productId === productId)
-
-//       console.log(existingProductIndex)
-
-//       if (existingProductIndex !== -1) {
-//         productsData[existingProductIndex].quantity = (payload.quantity !== undefined ? payload.quantity : productsData[existingProductIndex].quantity) 
-//         productsData[existingProductIndex].varian = (payload.varian !== undefined ? payload.varian : productsData[existingProductIndex].varian)
-//         productsData[existingProductIndex].subtotal = productsData[existingProductIndex].quantity * productsData[existingProductIndex].price
-//       } else {
-//         throw new NotFoundError('Product not found In Cart')
-//       }
-
-//       if (productsData[existingProductIndex].quantity === 0) {
-//         productsData.splice(existingProductIndex, 1) 
-//       }
-
-//       const total = productsData.reduce((acc, curr) => {
-//         return acc + curr.subtotal
-//       }, 0)
-
-//       const docRef = querySnapshot.docs[0].ref
-
-//       await docRef.update({
-//         total,
-//         products: productsData
-//       }) 
-//       return { message: 'Cart quantity updated successfully' }
-//     } catch (error) {
-//       console.error('Error updating cart quantity:', error)
-//       throw error
-//     }
-//   }
-// }
 
 module.exports = WishlistServices

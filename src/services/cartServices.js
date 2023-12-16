@@ -26,10 +26,8 @@ class CartServices {
         throw new NotFoundError('Cart not found')
       }
       
-      console.log(cartsData)
       return cartsData
     } catch (error) {
-      console.error('Error getting carts:', error)
       throw error
     }
   }
@@ -39,7 +37,6 @@ class CartServices {
       const doc = db.collection('carts').doc(data.id)
       await doc.set(data)
     } catch (error) {
-      console.error(error)
       throw error
     }
   }
@@ -53,10 +50,8 @@ class CartServices {
       }
 
       let productsData = null
-      console.log('halooo')
       querySnapshot.forEach((data) => { 
         const { products } = data.data()
-        console.log(products)
         productsData = products
       })
 
@@ -66,15 +61,11 @@ class CartServices {
       const total = productsData.reduce((acc, curr) => {
         return acc + curr.subtotal
       }, 0)
-      console.log(productsData)
       await docRef.update({
         total,
         products: productsData
       })
-
-      console.log('Update successful')
     } catch (error) {
-      console.error(error)
       throw error
     }
   }
@@ -94,8 +85,6 @@ class CartServices {
       })
 
       const existingProductIndex = productsData.findIndex((product) => product.productId === productId)
-
-      console.log(existingProductIndex)
 
       if (existingProductIndex !== -1) {
         productsData[existingProductIndex].quantity = (payload.quantity !== undefined ? payload.quantity : productsData[existingProductIndex].quantity) 
@@ -120,7 +109,6 @@ class CartServices {
       }) 
       return { message: 'Cart quantity updated successfully' }
     } catch (error) {
-      console.error('Error updating cart quantity:', error)
       throw error
     }
   }
@@ -138,10 +126,7 @@ class CartServices {
         const { products } = data.data()
         productsData = products
       })
-      console.log(productsData)
       const existingProductIndex = productsData.findIndex((product) => product.productId === productId)
-
-      console.log(existingProductIndex)
 
       if (existingProductIndex !== -1) {
         productsData.splice(existingProductIndex, 1)
@@ -156,7 +141,6 @@ class CartServices {
       }) 
       return productId
     } catch (error) {
-      console.error('Error updating cart quantity:', error)
       throw error
     }
   }

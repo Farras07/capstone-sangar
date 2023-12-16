@@ -24,7 +24,6 @@ class CatalogServices {
         throw new NotFoundError('Catalog Flower not found')
       }
       
-      console.log(catalogFlower)
       return catalogFlower
     } catch (error) {
       throw error
@@ -41,12 +40,10 @@ class CatalogServices {
         catalogFlower = cartData
       })
 
-      console.log(catalogFlower)
       if (!catalogFlower) {
         throw new NotFoundError('Flower not found in catalog')
       }
       
-      console.log(catalogFlower)
       return catalogFlower
     } catch (error) {
       throw error

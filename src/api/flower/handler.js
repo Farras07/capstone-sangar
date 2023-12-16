@@ -13,5 +13,10 @@ class FlowerHandler {
     const data = await this._service.getFlowerById(idFlower)
     return data
   }
+
+  async predictFlower(image) {
+    const data = await this._service.predictFlower(image)
+    return data
+  }
 }
 module.exports = FlowerHandler

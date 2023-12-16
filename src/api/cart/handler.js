@@ -45,7 +45,6 @@ class CartHandler {
       const sellerData = await this._sellerServices.getSellerById(sellerId)
       
       const total = price * payload.quantity
-      console.log('jajaj')
       if (cover) {
         payload.cover = cover
       }
@@ -57,7 +56,6 @@ class CartHandler {
         flowerName,
         subtotal: total
       }
-      console.log(payload)
       // Implementation to add a new cart
       return await this._service.addProductToCart(userId, payload)
     } catch (error) {

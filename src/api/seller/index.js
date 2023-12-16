@@ -37,7 +37,6 @@ router.get('/', async (req, res) => {
     const token = req.headers.authorization
     const decodedToken = await AuthorizationServices(token)
     const { uid: ownerId } = decodedToken
-    console.log(ownerId)
     const data = await handler.getSellerByOwnerIdHandler(ownerId)
     res.status(200).json(
       { 

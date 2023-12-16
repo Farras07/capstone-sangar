@@ -35,7 +35,6 @@ router.post('/product', async (req, res) => {
     const decodedToken = await AuthorizationServices(token)
     const { uid: userId } = decodedToken
     const { productId } = req.body
-    console.log('halooo')
     await handler.postProductToCartHandler(userId, req.body, productId)
 
     res.status(200).json({
@@ -56,7 +55,6 @@ router.put('/product/:productId', async (req, res) => {
     const decodedToken = await AuthorizationServices(token)
     const { uid: userId } = decodedToken
     const productId = req.params.productId
-    console.log(productId)
     await handler.updateCartHandler(userId, req.body, productId)
 
     res.status(200).json({

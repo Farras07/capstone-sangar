@@ -1,12 +1,12 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-underscore-dangle */
 const admin = require('../config/firebaseAdmin')
 const { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } = require('firebase/auth')
 const app = require('../config/firebaseConfig')
-const UserServices = require('../services/userServices')
 const AuthenticationServices = require('../services/authenticationServices')
-const AuthenticationError = require('../exceptions/AuthenticationError')
-
-const userServices = new UserServices()
+const axios = require('axios')
+const params = new URLSearchParams()
+const AuthorizationError = require('../exceptions/AuthorizationError')
 const auth = getAuth(app)
 
 exports.login = async (req, res) => {
@@ -16,11 +16,9 @@ exports.login = async (req, res) => {
   }
   try {
     const signInResponse = await signInWithEmailAndPassword(auth, user.email, user.password)
-    const userProfle = await userServices.getUserById(signInResponse.user.uid)
-    console.log('profile')
-    console.log(userProfle)
     const credential = await signInResponse.user.getIdToken(true)
-    res.status(200).json({ status: 'success', message: 'Masuk Berhasil', credential })
+    const refreshToken = signInResponse.user.refreshToken
+    res.status(200).json({ status: 'success', message: 'Masuk Berhasil', credential, refreshToken })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -50,23 +48,19 @@ exports.resetPassword = async (req, res) => {
 
 exports.refreshAccessToken = async (req, res) => {
   try {
-    const { userId } = req.body
-    const user = await admin.auth().getUser(userId)
-    const refreshToken = user.tokensValidAfterTime
-  
-    const currentTimestamp = Date.now()
-    const refreshThreshold = 60 * 60 * 1000 // 1 hour in milliseconds
-  
-    if (currentTimestamp - refreshToken > refreshThreshold) {
-      console.log('Refresh token has expired or is not valid anymore.')
-      throw new AuthenticationError('Refresh token has expired or is not valid anymore.')
-    }
+    const { refresh_token } = req.body
 
-    const customToken = await admin.auth().createCustomToken(userId)
-    // const signInResponse = await admin.auth().signInWithCustomToken(customToken)
+    params.append('grant_type', 'refresh_token')
+    params.append('refresh_token', refresh_token)
 
-    res.status(201).json({ status: 'success', message: 'Refreshing Access Token Success', credential: customToken })
+    const refreshingToken = await axios.post(`https://securetoken.googleapis.com/v1/token?key=${process.env.API_KEY}`, params, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+
+    res.status(201).json({ status: 'success', message: 'Refreshing Access Token Success', credential: refreshingToken.data.access_token })
   } catch (error) {
-    res.status(500).json({ status: 'fail', error: error.message })
+    res.status(403).json({ status: 'fail', error: 'refresh token expired / invalid, please login' })
   }
 }
