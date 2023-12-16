@@ -19,7 +19,7 @@ const catalog = require('./api/catalog')
 
 dotenv.config({ path: '.env.development' })
 const host = process.env.HOST
-const port = process.env.PORT
+const port = process.env.port
 
 app.use(bodyParser.json())
 
