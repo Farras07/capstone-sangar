@@ -4,6 +4,9 @@ const app = express()
 const dotenv = require('dotenv')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const csv = require('csv-parser')
+const fs = require('fs')
+const db = require('./config/dbConfig')
 
 const authRoutes = require('./routes/authRoutes.js')
 const authenticate = require('./middleware/authenticate.js')
@@ -39,6 +42,54 @@ app.get('/', (req, res) => {
 app.get('/protected', authenticate, (req, res) => {
   res.json({ message: 'This is a protected route', user: req.user })
 })
+
+app.post('/import', (req, res) => {
+  try {
+    fs.createReadStream('databunga.csv')
+      .pipe(csv())
+      .on('data', async (data) => {
+        console.log(data)
+        await db.collection('katalog').doc(data.localName).set(data)
+      })
+      .on('end', () => {
+        res.send('CSV file successfully processed')
+      })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+// app.post('/regis', async (req, res) => {
+//   try {
+//     const FormData = require('form-data')    
+//     const formData = new FormData()
+  
+//     formData.append('fullname', 'surya1234')
+//     formData.append('username', 'surya1234')
+//     formData.append('email', 'surya1234@gmail.com')
+//     formData.append('password', '123456789')
+//     formData.append('address', 'Jl.Kalimantan No.180')
+//     formData.append('locationLatitude', 77)
+//     formData.append('locationLongitude', -10)
+//     formData.append('contact', '089374748')
+//     const predictionResponse = await axios.post('https://backend-cloud-run-1-m7kn4aeh5a-as.a.run.app/user', formData, {
+//       headers: {
+//         'Content-Type': 'multipart/form-data'
+//       },
+//       responseType: 'json'
+//     })
+//     console.log(predictionResponse)
+//     res.send({
+//       status: 'success',
+//       data: predictionResponse.data
+//     })
+//   } catch (error) {
+//     res.send({
+//       status: 'fail',
+//       message: error.message
+//     })
+//   }
+// })
 
 app.listen(port, () => {
   console.log(`App listening on http://${host}:${port}`)

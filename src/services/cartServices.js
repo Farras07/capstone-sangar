@@ -122,13 +122,20 @@ class CartServices {
       }
 
       let productsData = null
+      let totalCart = 0
       querySnapshot.forEach((data) => { 
-        const { products } = data.data()
+        const { products, total } = data.data()
         productsData = products
+        totalCart = total
       })
       const existingProductIndex = productsData.findIndex((product) => product.productId === productId)
 
       if (existingProductIndex !== -1) {
+        const docRef = querySnapshot.docs[0].ref
+        totalCart = totalCart - productsData[existingProductIndex].subtotal
+        await docRef.update({
+          total: totalCart
+        }) 
         productsData.splice(existingProductIndex, 1)
       } else {
         throw new NotFoundError('Product not found In Cart')

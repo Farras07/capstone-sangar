@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server.js",
+    "start-dev": "nodemon src/server.js",
     "lint": "eslint ./**/*.js"
   },
   "keywords": [],
@@ -26,6 +27,7 @@
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
     "dotenv": "^16.3.1",
     "firebase": "^10.6.0",
     "firebase-admin": "^11.11.0",
