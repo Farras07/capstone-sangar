@@ -7,6 +7,7 @@ const cors = require('cors')
 const csv = require('csv-parser')
 const fs = require('fs')
 const db = require('./config/dbConfig')
+const { nanoid } = require('nanoid')
 
 const authRoutes = require('./routes/authRoutes.js')
 const authenticate = require('./middleware/authenticate.js')
@@ -48,8 +49,9 @@ app.post('/import', (req, res) => {
     fs.createReadStream('databunga.csv')
       .pipe(csv())
       .on('data', async (data) => {
+        const id = `catalog-${nanoid(10)}`
         console.log(data)
-        await db.collection('katalog').doc(data.localName).set(data)
+        await db.collection('katalog').doc(data.localName).set({...data, id })
       })
       .on('end', () => {
         res.send('CSV file successfully processed')
