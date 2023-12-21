@@ -53,6 +53,24 @@ router.get('/', async (req, res) => {
   }
 })
 
+router.get('/all', async (req, res) => {
+  try {
+    const data = await handler.getAllSellerFlowersHandler()
+    res.status(200).json(
+      { 
+        status: 'success',
+        message: 'Success get sellers',
+        data
+      }
+    )
+  } catch (error) {
+    res.status(error.statusCode || 500).json({
+      status: 'Fail',
+      message: error.message
+    })
+  }
+})
+
 router.get('/:sellerId', async (req, res) => {
   try {
     const { sellerId } = req.params

@@ -76,6 +76,12 @@ class SellerHandler {
     const flowersData = await this._flowerService.getSellerFlowers(sellerId)
     return flowersData
   }
+
+  async getAllSellerFlowersHandler() {
+    console.log('halooo')
+    const sellerData = await this._sellerServices.getAllSeller()
+    return sellerData
+  }
   
   async getSellerFlowerByIdHandler (flowerId, sellerId) {
     const flowersData = await this._flowerService.getSellerFlowerById(flowerId, sellerId)

@@ -58,6 +58,24 @@ class SellerServices {
     }
   }
 
+  async getAllSeller() {
+    try {
+      const querySnapshot = await db.collection('seller').get()
+    
+      const sellerData = []
+      querySnapshot.forEach((doc) => {
+        sellerData.push(doc.data())
+      })
+      if (!sellerData) {
+        throw new NotFoundError('Seller not found')
+      }
+    
+      return sellerData
+    } catch (error) {
+      throw error
+    }
+  }
+
   async getSellerById (sellerId) {
     try {
       const querySnapshot = await db.collection('seller').where('sellerId', '==', sellerId).get()
